@@ -1,6 +1,7 @@
 package hm.edu.smartgardening.controller;
 
 import hm.edu.smartgardening.controller.dto.ConfigDto;
+import hm.edu.smartgardening.controller.dto.DeviceBriefDto;
 import hm.edu.smartgardening.controller.dto.DeviceDto;
 import hm.edu.smartgardening.model.Config;
 import hm.edu.smartgardening.model.Device;
@@ -25,9 +26,9 @@ public class DeviceApiController {
     }
 
     @GetMapping()
-    public List<DeviceDto> getAllDevices() {
+    public List<DeviceBriefDto> getAllDevices() {
         return devices.getAll()
-                .map(device -> mapper.map(device, DeviceDto.class))
+                .map(device -> mapper.map(device, DeviceBriefDto.class))
                 .collect(Collectors.toList());
     }
 

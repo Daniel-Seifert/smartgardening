@@ -34,7 +34,7 @@ public class Device {
     @EqualsAndHashCode.Exclude
     private Date updateDate;
 
-    @OneToOne(cascade = CascadeType.MERGE)
+    @OneToOne(cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     private Config config;
 
