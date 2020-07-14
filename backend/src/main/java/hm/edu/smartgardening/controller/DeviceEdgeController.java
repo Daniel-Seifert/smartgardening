@@ -4,15 +4,13 @@ import hm.edu.smartgardening.controller.dto.ConfigDto;
 import hm.edu.smartgardening.model.Device;
 import hm.edu.smartgardening.service.DeviceService;
 import org.modelmapper.ModelMapper;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 
 @RestController
+@CrossOrigin
 @RequestMapping("/edge/devices")
 public class DeviceEdgeController {
 
