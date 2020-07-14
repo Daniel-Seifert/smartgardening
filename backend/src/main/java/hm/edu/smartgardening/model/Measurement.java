@@ -31,5 +31,8 @@ public class Measurement {
     @EqualsAndHashCode.Exclude
     private Date createDate;
 
+    /**
+     * Value in range [0.0, 1.0]
+     */
     private float value;
 }

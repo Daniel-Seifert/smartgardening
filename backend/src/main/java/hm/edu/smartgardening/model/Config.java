@@ -2,10 +2,7 @@ package hm.edu.smartgardening.model;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 
 @Entity
@@ -21,7 +18,18 @@ public class Config {
     @EqualsAndHashCode.Exclude
     private Long id;
 
+    // Flags
+    private boolean activated;
+
+    // Weather
+    private boolean outdoor;
+    @Column(length = 10)
+    private String zipCode;
+
+    // Watering
     private float minHumidity;
     private float maxHumidity;
+    private int minWateringSeconds;
+    private int maxWateringSeconds;
 
 }
