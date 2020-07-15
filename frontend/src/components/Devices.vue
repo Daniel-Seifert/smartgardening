@@ -94,6 +94,8 @@
 import Vue from "vue";
 import { Device } from "../model/Device";
 import LineChart from "./LineChart.vue";
+import {mapGetters} from 'vuex';
+import {mapActions} from 'vuex';
 
 export default Vue.extend({
   name: "Devices",
@@ -123,24 +125,37 @@ export default Vue.extend({
         ],
       },
     },
-    devices: [
-      {
-        uuid: "550e8400-e29b-11d4-a716-446655440000",
-        name: "First Device",
-        activated: true,
-      },
-      {
-        uuid: "550e8400-e29b-11d4-a716-446655440001",
-        name: "Second Device",
-        activated: false,
-      },
-      {
-        uuid: "550e8400-e29b-11d4-a716-446655440002",
-        name: "Third Device",
-        activated: true,
-      },
-    ],
+
+
+    // devices: [
+      // {
+        // uuid: "550e8400-e29b-11d4-a716-446655440000",
+        // name: "First Device",
+        // activated: true,
+      // },
+      // {
+        // uuid: "550e8400-e29b-11d4-a716-446655440001",
+        // name: "Second Device",
+        // activated: false,
+      // },
+      // {
+        // uuid: "550e8400-e29b-11d4-a716-446655440002",
+        // name: "Third Device",
+        // activated: true,
+      // },
+    // ],
   }),
+  computed: {
+      ...mapGetters(
+        {
+          devices:'allDevices',
+          activatedDevices: 'activatedDevices'
+        }
+      ),
+      ...mapActions(
+        ['getMeassurements']
+      )
+  },
   watch: {
     selectedIndex: function() {
       if (this.selectedIndex != -1) {
@@ -182,7 +197,7 @@ export default Vue.extend({
           {
             label: "Feuchtigkeit in %",
             backgroundColor: "#1E88E5",
-            data: [...Array(12).keys()].map((i) => this.getRandomInt()),
+            data: [...this.$store.getters.measurement("550e8400-e29b-11d4-a716-446655440002")],
           },
         ],
       };
