@@ -1,18 +1,26 @@
+<style scoped>
+.devices {
+  padding-top: 20px;
+  padding-left: 100px;
+  padding-right: 100px;
+  padding-bottom: 20px;
+}
+</style>
+
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <Devices class="devices" />
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import HelloWorld from "@/components/HelloWorld.vue";
+import Devices from "@/components/Devices.vue";
 
 export default {
   name: "Home",
   components: {
-    HelloWorld
-  }
+    Devices,
+  },
 };
 </script>
