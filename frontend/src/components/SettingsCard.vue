@@ -100,32 +100,32 @@ import Component from "vue-class-component";
 export default Vue.extend({
   name: "Settings",
   props: {
-    config: Object as () => Config,
+    config: Object as () => Config
   },
   data: () => ({
     name: "",
     nameRules: [
       (v: any) => !!v || "Name wird benötigt",
       (v: any) =>
-        (v && v.length <= 50) || "Name darf nicht mehr als 50 Zeichen haben",
+        (v && v.length <= 50) || "Name darf nicht mehr als 50 Zeichen haben"
     ],
     zipCode: "",
     zipCodeRules: [
       (v: any) => !!v || "Postleitzahl wird benötigt",
       (v: any) =>
         (v && v.length <= 10) ||
-        "Postleitzahl darf nicht mehr als 10 Zeichen haben",
+        "Postleitzahl darf nicht mehr als 10 Zeichen haben"
     ],
     outdoor: false,
     minHumidity: 0.2,
     maxHumidity: 0.8,
     minWatering: 60,
-    maxWatering: 360,
+    maxWatering: 360
   }),
   methods: {
     save() {
       console.log("Saved");
-    },
-  },
+    }
+  }
 });
 </script>

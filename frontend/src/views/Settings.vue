@@ -11,7 +11,7 @@ import { Config } from "../model/Config";
 export default {
   name: "Settings",
   components: {
-    SettingsCard,
+    SettingsCard
   },
   methods: {
     loadConfig: () => {
@@ -21,9 +21,9 @@ export default {
         minHumidity: 0.2,
         maxHumidity: 0.8,
         minWateringSeconds: 60,
-        maxWateringSeconds: 360,
+        maxWateringSeconds: 360
       };
-    },
-  },
+    }
+  }
 };
 </script>
