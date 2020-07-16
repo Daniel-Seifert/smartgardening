@@ -26,7 +26,7 @@
               dark
               outlined
               color="green darken-2"
-              @click="$router.push(`devices/${device.uuid}/settings`)"
+              @click="$router.push(`devices/${device.id}/settings`)"
             >
               <v-icon dark>settings</v-icon>
             </v-btn>
@@ -54,7 +54,7 @@
             <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>UUID</v-list-item-title>
-                <v-list-item-subtitle>{{ device.uuid }}</v-list-item-subtitle>
+                <v-list-item-subtitle>{{ device.id }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
             <v-list-item v-if="device.activated">
@@ -78,7 +78,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn v-if="!device.activated" text color="success">
+          <v-btn v-if="!device.activated" text color="success" @click="activateDevices(device.name, device.id)">
             Aktivieren
           </v-btn>
           <v-btn text color="error">
@@ -126,12 +126,18 @@ export default Vue.extend({
       }
     }
   }),
+  mounted(){
+    this.$store.dispatch('loadDevices');
+  },
   computed: {
     ...mapGetters({
       devices: "allDevices",
       activatedDevices: "activatedDevices"
     }),
-    ...mapActions(["getMeassurements"])
+
+    ...mapActions([
+      "getMeassurements",
+    ])
   },
   watch: {
     selectedIndex: function() {
@@ -142,6 +148,9 @@ export default Vue.extend({
     }
   },
   methods: {
+    activateDevices(name, uuid) {
+      this.$store.dispatch('activateDevice',{name: name, uuid: uuid});
+    },
     loadStats() {
       // Reset stats
       this.stats = {

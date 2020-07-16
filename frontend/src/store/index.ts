@@ -2,6 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
 import { Device } from "../model/Device";
+import { baseUrl } from "./baseUrl";
 
 Vue.use(Vuex);
 
@@ -10,7 +11,7 @@ export default new Vuex.Store({
     devices: 
      [
       {
-        uuid: "550e8400-e29b-11d4-a716-446655440000",
+        id: "550e8400-e29b-11d4-a716-446655440000",
         name: "First Device",
         activated: true,
         createDate: new Date("02.02.2020"),
@@ -18,14 +19,14 @@ export default new Vuex.Store({
         measurement: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
       },
       {
-        uuid: "550e8400-e29b-11d4-a716-446655440001",
+        id: "550e8400-e29b-11d4-a716-446655440001",
         name: "Second Device",
         activated: false,
         createDate: new Date("02.02.2020"),
         updateDate: new Date("02.02.2020"),
       },
       {
-        uuid: "550e8400-e29b-11d4-a716-446655440002",
+        id: "550e8400-e29b-11d4-a716-446655440002",
         name: "Third Device",
         activated: true,
         createDate: new Date("02.02.2020"),
@@ -49,11 +50,11 @@ export default new Vuex.Store({
   },
   mutations: {
     SET_DEVICES(state, devices) {
-      state.devices.push(devices);
+      state.devices = devices;
     },
 
     SET_DEVICECONFIG(state, config) {
-      const index = state.devices.findIndex(c => c.uuid === config.uuid);
+      const index = state.devices.findIndex(c => c.id === config.uuid);
       if (index != -1) {
         state.devices[index].config = config.config;
       }
@@ -61,11 +62,21 @@ export default new Vuex.Store({
 
     SET_MEASUREMENT(state, measurements) {
       const index = state.devices.findIndex(
-        m => m.uuid === measurements.uuid
+        m => m.id === measurements.uuid
       );
 
       if (index != -1) {
         state.devices[index].measurement = measurements;
+      }
+    },
+
+    SET_ACTIVE(state, uuid) {
+      const index = state.devices.findIndex(
+        d => d.id === uuid 
+      );
+
+      if (index != -1) {
+        state.devices[index].activated = true;
       }
     }
   },
@@ -78,27 +89,33 @@ export default new Vuex.Store({
     },
     measurement: state => (uuid:string) => {
       return state.devices.find(
-        device => device.uuid === uuid
+        device => device.id === uuid
       )?.measurement?.map(i => i.value);
     }
   },
   actions: {
     loadDevices({ commit }) {
-      axios.get("api/devices").then(({ data }) => {
+      axios.get(`${baseUrl}/api/devices`).then(({ data }) => {
         commit("SET_DEVICES", data);
       });
     },
 
     loadDevicesConfig({ commit }, uuid) {
-      axios.get("api/devices/" + uuid + "/config").then(({ data }) => {
+      axios.get(`${baseUrl}/api/devices/${uuid}/config`).then(({ data }) => {
         commit("SET_DEVICECONFIG", data );
       });
     },
 
     loadMeasurements({ commit, getters }, uuid) {
-      axios.get(uuid + "/measurements").then(({ data }) => {
+      axios.get(`${baseUrl}/${uuid}/measurements`).then(({ data }) => {
         commit("SET_MEASUREMENT", data);
       });
+    },
+
+    activateDevice({commit}, device) {
+      axios.patch(`${baseUrl}/api/devices/${device.uuid}`, {name: device.name, activated: true}).then(({data}) => {
+        commit("SET_ACTIVE", device.uuid)
+      })
     }
   }
 });
