@@ -20,7 +20,7 @@ import Devices from "@/components/Devices.vue";
 export default {
   name: "Home",
   components: {
-    Devices,
-  },
+    Devices
+  }
 };
 </script>

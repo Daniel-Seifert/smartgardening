@@ -9,17 +9,17 @@ const routes: Array<RouteConfig> = [
   {
     path: "/",
     name: "Home",
-    component: Home,
+    component: Home
   },
   {
     path: "/devices/:uuid/settings",
     name: "Settings",
-    component: Settings,
-  },
+    component: Settings
+  }
 ];
 
 const router = new VueRouter({
-  routes,
+  routes
 });
 
 export default router;

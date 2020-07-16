@@ -94,17 +94,19 @@
 import Vue from "vue";
 import { Device } from "../model/Device";
 import LineChart from "./LineChart.vue";
+import { mapGetters } from "vuex";
+import { mapActions } from "vuex";
 
 export default Vue.extend({
   name: "Devices",
   components: {
-    LineChart,
+    LineChart
   },
   data: () => ({
     selectedIndex: -1,
     stats: {
       humidity: "57%",
-      lastWatering: "14.07.2020 19:10",
+      lastWatering: "14.07.2020 19:10"
     },
     datacollection: {},
     options: {
@@ -117,51 +119,41 @@ export default Vue.extend({
             display: true,
             ticks: {
               suggestedMin: 0,
-              suggestedMax: 100,
-            },
-          },
-        ],
-      },
-    },
-    devices: [
-      {
-        uuid: "550e8400-e29b-11d4-a716-446655440000",
-        name: "First Device",
-        activated: true,
-      },
-      {
-        uuid: "550e8400-e29b-11d4-a716-446655440001",
-        name: "Second Device",
-        activated: false,
-      },
-      {
-        uuid: "550e8400-e29b-11d4-a716-446655440002",
-        name: "Third Device",
-        activated: true,
-      },
-    ],
+              suggestedMax: 100
+            }
+          }
+        ]
+      }
+    }
   }),
+  computed: {
+    ...mapGetters({
+      devices: "allDevices",
+      activatedDevices: "activatedDevices"
+    }),
+    ...mapActions(["getMeassurements"])
+  },
   watch: {
     selectedIndex: function() {
       if (this.selectedIndex != -1) {
         this.loadStats();
         this.loadMeasures();
       }
-    },
+    }
   },
   methods: {
     loadStats() {
       // Reset stats
       this.stats = {
         humidity: "-",
-        lastWatering: "-",
+        lastWatering: "-"
       };
       // Load stats async
       setTimeout(
         () =>
           (this.stats = {
             humidity: `57 %`,
-            lastWatering: "14.07.2020 11:30",
+            lastWatering: "14.07.2020 11:30"
           }),
         1000
       );
@@ -169,27 +161,31 @@ export default Vue.extend({
     loadMeasures() {
       // Reset stats
       this.datacollection = {
-        labels: [...Array(12).keys()].map((i) => `${i}:00`),
-        datasets: [],
+        labels: [...Array(12).keys()].map(i => `${i}:00`),
+        datasets: []
       };
       // Load stats async
       setTimeout(() => this.fillData(), 2000);
     },
     fillData() {
       this.datacollection = {
-        labels: [...Array(12).keys()].map((i) => `${i}:00`),
+        labels: [...Array(12).keys()].map(i => `${i}:00`),
         datasets: [
           {
             label: "Feuchtigkeit in %",
             backgroundColor: "#1E88E5",
-            data: [...Array(12).keys()].map((i) => this.getRandomInt()),
-          },
-        ],
+            data: [
+              ...this.$store.getters.measurement(
+                "550e8400-e29b-11d4-a716-446655440002"
+              )
+            ]
+          }
+        ]
       };
     },
     getRandomInt() {
       return Math.floor(Math.random() * (80 - 5 + 1)) + 5;
-    },
-  },
+    }
+  }
 });
 </script>
