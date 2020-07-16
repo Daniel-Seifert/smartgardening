@@ -125,24 +125,6 @@ export default Vue.extend({
         ]
       }
     }
-
-    // devices: [
-    // {
-    // uuid: "550e8400-e29b-11d4-a716-446655440000",
-    // name: "First Device",
-    // activated: true,
-    // },
-    // {
-    // uuid: "550e8400-e29b-11d4-a716-446655440001",
-    // name: "Second Device",
-    // activated: false,
-    // },
-    // {
-    // uuid: "550e8400-e29b-11d4-a716-446655440002",
-    // name: "Third Device",
-    // activated: true,
-    // },
-    // ],
   }),
   computed: {
     ...mapGetters({
