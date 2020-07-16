@@ -70,8 +70,10 @@ public class DeviceApiController {
     @PatchMapping("{uuid}")
     public DevicePatchDto updateDevice(@PathVariable UUID uuid, @RequestBody DevicePatchDto devicePatch) {
         final Device device = devices.getByUuidOrThrow(uuid);
-        device.setName(devicePatch.getName());
-        device.setActivated(devicePatch.isActivated());
+        if (devicePatch.getName() != null)
+            device.setName(devicePatch.getName());
+        if(devicePatch.getActivated() != null)
+            device.setActivated(devicePatch.getActivated());
         devices.updateDeviceOrThrow(device);
         return mapper.map(device, DevicePatchDto.class);
     }
