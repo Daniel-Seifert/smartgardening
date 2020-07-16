@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
@@ -61,7 +62,9 @@ public class DeviceApiController {
         device.setConfig(mapper.map(updateConfig, Config.class));
         device.setActivated(updateConfig.isActivated());
         devices.updateDeviceOrThrow(device);
-        return mapper.map(device.getConfig(), ConfigDto.class);
+        final ConfigDto newConfig = mapper.map(device.getConfig(), ConfigDto.class);
+        newConfig.setActivated(device.isActivated());
+        return newConfig;
     }
 
     @PatchMapping("{uuid}")
