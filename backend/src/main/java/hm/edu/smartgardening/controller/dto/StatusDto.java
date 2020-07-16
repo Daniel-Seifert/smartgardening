@@ -5,14 +5,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeviceBriefDto {
-
-    private UUID id;
-    private String name;
-    private boolean activated;
+public class StatusDto {
+    private Long id;
+    private boolean pumping;
+    private float humidity;
+    private Date lastWatering;
 }

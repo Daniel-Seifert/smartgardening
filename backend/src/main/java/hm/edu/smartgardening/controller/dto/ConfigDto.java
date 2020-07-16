@@ -10,7 +10,12 @@ import lombok.NoArgsConstructor;
 public class ConfigDto {
 
     private Long id;
+    private boolean outdoor;
     private float minHumidity;
     private float maxHumidity;
+    private int minWateringSeconds;
+    private int maxWateringSeconds;
+    private boolean activated;
+    private String zipCode;
 
 }

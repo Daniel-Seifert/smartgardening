@@ -1,8 +1,6 @@
 package hm.edu.smartgardening.controller;
 
-import hm.edu.smartgardening.controller.dto.ConfigDto;
-import hm.edu.smartgardening.controller.dto.DeviceBriefDto;
-import hm.edu.smartgardening.controller.dto.DeviceDto;
+import hm.edu.smartgardening.controller.dto.*;
 import hm.edu.smartgardening.model.Config;
 import hm.edu.smartgardening.model.Device;
 import hm.edu.smartgardening.service.DeviceService;
@@ -26,6 +24,7 @@ public class DeviceApiController {
         this.mapper = mapper;
     }
 
+
     @GetMapping()
     public List<DeviceBriefDto> getAllDevices() {
         return devices.getAll()
@@ -36,14 +35,42 @@ public class DeviceApiController {
     @GetMapping("{uuid}/config")
     public ConfigDto getDeviceConfig(@PathVariable UUID uuid) {
         final Device device = devices.getByUuidOrThrow(uuid);
-        return mapper.map(device.getConfig(), ConfigDto.class);
+        final ConfigDto config = mapper.map(device.getConfig(), ConfigDto.class);
+        config.setActivated(device.isActivated());
+        return config;
+    }
+
+    @GetMapping("{uuid}/measurements")
+    public List<GetMeasurementDto> getAllMeasurements(@PathVariable UUID uuid) {
+        final Device device = devices.getByUuidOrThrow(uuid);
+        return device.getMeasurements()
+                .stream()
+                .map(it -> mapper.map(it, GetMeasurementDto.class))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("{uuid}/status")
+    public StatusDto getDeviceStatus(@PathVariable UUID uuid) {
+        final Device device = devices.getByUuidOrThrow(uuid);
+        return mapper.map(device.getStatus(), StatusDto.class);
     }
 
     @PutMapping("{uuid}/config")
     public ConfigDto updateDeviceConfig(@PathVariable UUID uuid, @RequestBody ConfigDto updateConfig) {
         final Device device = devices.getByUuidOrThrow(uuid);
         device.setConfig(mapper.map(updateConfig, Config.class));
+        device.setActivated(updateConfig.isActivated());
+        devices.updateDeviceOrThrow(device);
         return mapper.map(device.getConfig(), ConfigDto.class);
+    }
+
+    @PatchMapping("{uuid}")
+    public DevicePatchDto updateDevice(@PathVariable UUID uuid, @RequestBody DevicePatchDto devicePatch) {
+        final Device device = devices.getByUuidOrThrow(uuid);
+        device.setName(devicePatch.getName());
+        device.setActivated(devicePatch.isActivated());
+        devices.updateDeviceOrThrow(device);
+        return mapper.map(device, DevicePatchDto.class);
     }
 
     @DeleteMapping("{uuid}")
