@@ -25,7 +25,7 @@ public class Device {
     private UUID id;
 
     @Column(length = 512)
-    private String name;
+    private String name = "Plant";
 
     @CreatedDate
     @EqualsAndHashCode.Exclude
@@ -38,12 +38,18 @@ public class Device {
     @EqualsAndHashCode.Exclude
     private Config config;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
+    private Status status = new Status();
+
     @OneToMany(
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     @EqualsAndHashCode.Exclude
     private List<Measurement> measurements = new ArrayList<>();
+
+    private boolean activated;
 
     public void addMeasurement(Measurement measurement) {
         measurements.add(measurement);

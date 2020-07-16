@@ -25,7 +25,7 @@ public class Measurement {
 
     @Enumerated(EnumType.STRING)
     @EqualsAndHashCode.Exclude
-    private MeasureType measureType;
+    private MeasureType measureType = MeasureType.MOISTURE;
 
     @CreatedDate
     @EqualsAndHashCode.Exclude
