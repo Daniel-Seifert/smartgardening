@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DevicePatchDto {
     private String name;
-    private boolean activated;
+    private Boolean activated;
 }
