@@ -18,13 +18,10 @@ public class Config {
     @EqualsAndHashCode.Exclude
     private Long id;
 
-    // Flags
-    private boolean activated;
-
     // Weather
     private boolean outdoor;
     @Column(length = 10)
-    private String zipCode;
+    private String zipCode = "enter here";
 
     // Watering
     private float minHumidity;
