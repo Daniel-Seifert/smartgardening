@@ -26,7 +26,7 @@
               dark
               outlined
               color="green darken-2"
-              @click="$router.push(`devices/${device.id}/settings`)"
+              @click="openSetting(device.id)"
             >
               <v-icon dark>settings</v-icon>
             </v-btn>
@@ -78,10 +78,10 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn v-if="!device.activated" text color="success" @click="activateDevices(device.name, device.id)">
+          <v-btn v-if="!device.activated" text color="success" @click="activateDevices(device.id)">
             Aktivieren
           </v-btn>
-          <v-btn text color="error">
+          <v-btn text color="error" @click="deleteDevice(device.id)">
             Löschen
           </v-btn>
         </v-card-actions>
@@ -135,6 +135,12 @@ export default Vue.extend({
       activatedDevices: "activatedDevices"
     }),
 
+    ...mapGetters(
+      [
+        'measurement'
+      ]
+    ),
+
     ...mapActions([
       "getMeassurements",
     ])
@@ -148,9 +154,21 @@ export default Vue.extend({
     }
   },
   methods: {
-    activateDevices(name, uuid) {
-      this.$store.dispatch('activateDevice',{name: name, uuid: uuid});
+    openSetting(uuid:string){
+      this.$store.dispatch('loadDeviceConfig', uuid);
+      this.$router.push(`devices/${uuid}/settings`);
+      console.log(uuid)
     },
+
+    activateDevices(uuid:string) {
+      this.$store.dispatch('activateDevice',uuid);
+    },
+
+    deleteDevice(uuid:string){
+      this.$store.dispatch('deleteDevice', uuid);
+    },
+
+
     loadStats() {
       // Reset stats
       this.stats = {
@@ -184,7 +202,7 @@ export default Vue.extend({
             label: "Feuchtigkeit in %",
             backgroundColor: "#1E88E5",
             data: [
-              ...this.$store.getters.measurement(
+              ...this.measurement(
                 "550e8400-e29b-11d4-a716-446655440002"
               )
             ]

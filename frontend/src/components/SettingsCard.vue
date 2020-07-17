@@ -11,12 +11,12 @@
             required
           ></v-text-field>
           <v-row>
-            <v-switch v-model="outdoor" class="ma-4" label="Outdoor"></v-switch>
+            <v-switch v-model="config.outdoor" class="ma-4" label="Outdoor"></v-switch>
             <v-spacer></v-spacer>
             <v-fade-transition leave-absolute>
               <v-text-field
-                v-if="outdoor"
-                v-model="zipCode"
+                v-if="config.outdoor"
+                v-model="config.zipCode"
                 :counter="10"
                 :rules="zipCodeRules"
                 label="Postleitzahl"
@@ -28,11 +28,8 @@
         </v-col>
         <v-spacer></v-spacer>
         <v-col cols="2">
-          <v-btn color="success" class="mr-4" @click="save">
+          <v-btn color="success" class="mr-4" @click="save($route.params.uuid)">
             Speichern
-          </v-btn>
-          <v-btn color="error" class="mr-4" @click="save">
-            Löschen
           </v-btn>
         </v-col>
       </v-row>
@@ -42,7 +39,7 @@
           <h3>Minimale Bodenfeuchtigkeit für Bewässerung</h3>
           <v-slider
             style="margin-top: 30px"
-            v-model="minHumidity"
+            v-model="config.minHumidity"
             :thumb-size="30"
             thumb-label="always"
           >
@@ -52,7 +49,7 @@
           <h3>Maximale Bodenfeuchtigkeit für Bewässerung</h3>
           <v-slider
             style="margin-top: 30px"
-            v-model="maxHumidity"
+            v-model="config.maxHumidity"
             :thumb-size="30"
             thumb-label="always"
           >
@@ -63,26 +60,28 @@
           <h3>Minimale Bewässerungsdauer</h3>
           <v-slider
             style="margin-top: 55px"
-            v-model="minWatering"
+            v-model="config.minWateringSeconds"
             :thumb-size="50"
             max="3600"
             thumb-label="always"
+            step="5"
           >
             <template v-slot:thumb-label="{ value }">
-              {{ (value / 60).toFixed() }}m{{ (value % 60).toFixed() }}s
+              {{ Math.floor(value / 60) }}m {{ (value % 60) }}s
             </template>
           </v-slider>
 
           <h3>Maximale Bewässerungsdauer</h3>
           <v-slider
             style="margin-top: 55px"
-            v-model="maxWatering"
+            v-model="config.maxWateringSeconds"
             :thumb-size="50"
             max="3600"
             thumb-label="always"
+            step="5"
           >
             <template v-slot:thumb-label="{ value }">
-              {{ (value / 60).toFixed() }}m{{ (value % 60).toFixed() }}s
+              {{ Math.floor(value / 60) }}m {{ (value % 60) }}s
             </template>
           </v-slider>
         </v-col>
@@ -97,34 +96,56 @@ import { Device } from "../model/Device";
 import { Config } from "../model/Config";
 import Component from "vue-class-component";
 
+import {mapGetters} from "vuex";
+import {mapActions} from "vuex";
+
 export default Vue.extend({
   name: "Settings",
-  props: {
-    config: Object as () => Config
+   props: [
+     'initialName',
+     'initialConfig'
+   ],
+
+  created() {
+    this.name = this.initialName;
+    this.config = this.initialConfig;
   },
+
+  computed: {
+    ...mapGetters(
+      [
+        'getDevice',
+        'getDeviceConfig',
+        'getDeviceHummidity',
+      ]
+    ),
+  },
+
   data: () => ({
     name: "",
+    config:{
+        outdoor: false,
+        zipCode: "",
+        minHumidity: 0,
+        maxHumidity: 0,
+        minWateringSeconds: 0,
+        maxWateringSeconds: 0
+    },
     nameRules: [
       (v: any) => !!v || "Name wird benötigt",
       (v: any) =>
         (v && v.length <= 50) || "Name darf nicht mehr als 50 Zeichen haben"
     ],
-    zipCode: "",
     zipCodeRules: [
       (v: any) => !!v || "Postleitzahl wird benötigt",
       (v: any) =>
         (v && v.length <= 10) ||
         "Postleitzahl darf nicht mehr als 10 Zeichen haben"
     ],
-    outdoor: false,
-    minHumidity: 0.2,
-    maxHumidity: 0.8,
-    minWatering: 60,
-    maxWatering: 360
   }),
   methods: {
-    save() {
-      console.log("Saved");
+    save(uuid:string) {
+      this.$store.dispatch('setDeviceConfig', {uuid: uuid, config: this.config})
     }
   }
 });

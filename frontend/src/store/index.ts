@@ -48,6 +48,28 @@ export default new Vuex.Store({
       }
     ] as Device[],
   },
+  getters: {
+    activatedDevices: state => {
+      return state.devices.filter(device => device.activated);
+    },
+    allDevices: state => {
+      return state.devices;
+    },
+    getDevice: state => (uuid:string) => {
+      return state.devices.find(device => device.id === uuid);
+    },
+    getDeviceConfig: state => (uuid:string) => {
+      return state.devices.find(device => device.id === uuid)?.config;
+    },
+    getDeviceHummidity: state => (uuid:string) => {
+      return state.devices.find(device => device.id === uuid)?.config?.minHumidity;
+    },
+    measurement: state => (uuid:string) => {
+      return state.devices.find(
+        device => device.id === uuid
+      )?.measurement?.map(i => i.value);
+    }
+  },
   mutations: {
     SET_DEVICES(state, devices) {
       state.devices = devices;
@@ -78,19 +100,14 @@ export default new Vuex.Store({
       if (index != -1) {
         state.devices[index].activated = true;
       }
-    }
-  },
-  getters: {
-    activatedDevices: state => {
-      return state.devices.filter(device => device.activated);
     },
-    allDevices: state => {
-      return state.devices;
-    },
-    measurement: state => (uuid:string) => {
-      return state.devices.find(
-        device => device.id === uuid
-      )?.measurement?.map(i => i.value);
+    DELETE_DEVICE(state, uuid) {
+      const index = state.devices.findIndex(
+        d => d.id === uuid 
+      );
+      if (index != -1) {
+        state.devices.splice(index, 1);
+      }
     }
   },
   actions: {
@@ -100,9 +117,9 @@ export default new Vuex.Store({
       });
     },
 
-    loadDevicesConfig({ commit }, uuid) {
+    loadDeviceConfig({ commit }, uuid) {
       axios.get(`${baseUrl}/api/devices/${uuid}/config`).then(({ data }) => {
-        commit("SET_DEVICECONFIG", data );
+        commit("SET_DEVICECONFIG", {uuid: uuid, config: data });
       });
     },
 
@@ -112,10 +129,20 @@ export default new Vuex.Store({
       });
     },
 
-    activateDevice({commit}, device) {
-      axios.patch(`${baseUrl}/api/devices/${device.uuid}`, {name: device.name, activated: true}).then(({data}) => {
-        commit("SET_ACTIVE", device.uuid)
+    activateDevice({commit}, uuid) {
+      axios.patch(`${baseUrl}/api/devices/${uuid}`, {activated: true}).then(({data}) => {
+        commit("SET_ACTIVE",uuid)
+      });
+    },
+    deleteDevice({commit}, uuid) {
+      axios.delete(`${baseUrl}/api/devices/${uuid}`).then(() => {
+        commit ("DELETE_DEVICE",uuid);
+      })
+    },
+    setDeviceConfig({commit}, device) {
+      axios.put(`${baseUrl}/api/devices/${device.uuid}/config`, device.config).then(({data}) => {
+        commit("SET_DEVICECONFIG", {uuid: device.uuid, config: device.config})
       })
     }
   }
-});
+})
