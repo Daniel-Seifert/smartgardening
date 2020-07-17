@@ -157,7 +157,6 @@ export default Vue.extend({
     openSetting(uuid:string){
       this.$store.dispatch('loadDeviceConfig', uuid);
       this.$router.push(`devices/${uuid}/settings`);
-      console.log(uuid)
     },
 
     activateDevices(uuid:string) {

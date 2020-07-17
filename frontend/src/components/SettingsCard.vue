@@ -145,7 +145,8 @@ export default Vue.extend({
   }),
   methods: {
     save(uuid:string) {
-      this.$store.dispatch('setDeviceConfig', {uuid: uuid, config: this.config})
+      this.$store.dispatch('setDeviceConfig', {uuid: uuid, config: this.config});
+      this.$store.dispatch('setDeviceName', {uuid: uuid, name: this.name});
     }
   }
 });

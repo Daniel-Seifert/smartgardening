@@ -101,6 +101,15 @@ export default new Vuex.Store({
         state.devices[index].activated = true;
       }
     },
+    SET_NAME(state, device) {
+      const index = state.devices.findIndex(
+        d => d.id === device.uuid 
+      );
+
+      if (index != -1) {
+        state.devices[index].name = device.name;
+      }
+    },
     DELETE_DEVICE(state, uuid) {
       const index = state.devices.findIndex(
         d => d.id === uuid 
@@ -132,6 +141,11 @@ export default new Vuex.Store({
     activateDevice({commit}, uuid) {
       axios.patch(`${baseUrl}/api/devices/${uuid}`, {activated: true}).then(({data}) => {
         commit("SET_ACTIVE",uuid)
+      });
+    },
+    setDeviceName({commit}, device) {
+      axios.patch(`${baseUrl}/api/devices/${device.uuid}`, {name: device.name}).then(({data}) => {
+        commit("SET_NAME",device)
       });
     },
     deleteDevice({commit}, uuid) {

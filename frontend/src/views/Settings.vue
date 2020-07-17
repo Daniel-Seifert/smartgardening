@@ -14,17 +14,5 @@ export default {
   components: {
     SettingsCard
   },
-  methods: {
-    loadConfig: () => {
-      return {
-        outdoor: true,
-        zipCode: "82256",
-        minHumidity: 0.1,
-        maxHumidity: 0.8,
-        minWateringSeconds: 60,
-        maxWateringSeconds: 360
-      };
-    }
-  }
 };
 </script>
