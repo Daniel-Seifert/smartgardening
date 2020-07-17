@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.io.Serializable;
-import java.sql.Date;
+import java.util.Date;
 
 @Embeddable
 @Data
@@ -18,5 +20,6 @@ import java.sql.Date;
 public class WeatherId implements Serializable {
     @Column(length = 10)
     private String zipCode;
+    @Temporal(TemporalType.DATE)
     private Date day;
 }
