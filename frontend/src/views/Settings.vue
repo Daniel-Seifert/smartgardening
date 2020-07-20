@@ -1,7 +1,10 @@
 <template>
-  <div class="home">
-    <settings-card v-if="$store.getters.getDeviceConfig($route.params.uuid) !== undefined" :initialName="$store.getters.getDevice($route.params.uuid).name" :initialConfig="$store.getters.getDeviceConfig($route.params.uuid)" />
-    {{$store.getters.getDeviceConfig($route.params.uuid)}}
+  <div>
+    <settings-card
+      v-if="$store.getters.getDeviceConfig($route.params.uuid) !== undefined"
+      :initialName="$store.getters.getDevice($route.params.uuid).name"
+      :initialConfig="$store.getters.getDeviceConfig($route.params.uuid)"
+    />
   </div>
 </template>
 
@@ -12,7 +15,7 @@ import { Config } from "../model/Config";
 export default {
   name: "Settings",
   components: {
-    SettingsCard
+    SettingsCard,
   },
 };
 </script>

@@ -19,7 +19,9 @@
 
     <v-main>
       <transition name="fade" mode="out-in">
-        <router-view></router-view>
+        <v-container>
+          <router-view></router-view>
+        </v-container>
       </transition>
     </v-main>
   </v-app>
@@ -33,17 +35,11 @@ export default Vue.extend({
 
   data: () => ({
     //
-  })
+  }),
 });
 </script>
 
 <style>
-.home {
-  padding-top: 20px;
-  padding-left: 100px;
-  padding-right: 100px;
-  padding-bottom: 20px;
-}
 .fade-enter-active,
 .fade-leave-active {
   transition-duration: 0.3s;

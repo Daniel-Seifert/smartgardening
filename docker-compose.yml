@@ -1,6 +1,5 @@
-version: '3'
+version: "3"
 services:
-
   backend:
     build:
       context: .
@@ -14,16 +13,17 @@ services:
       - JDBC_DATABASE_USERNAME=admin
       - JDBC_DATABASE_PASSWORD=SuperSecure
       - PORT=8080
+      - API_KEY=No-Key
 
   postgres:
     image: postgres
     restart: always
     environment:
-      POSTGRES_DB: 'smartgardening'
-      POSTGRES_USER: 'admin'
-      POSTGRES_PASSWORD: 'SuperSecure'
+      POSTGRES_DB: "smartgardening"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "SuperSecure"
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - pg-data:/var/lib/postgresql/data
 

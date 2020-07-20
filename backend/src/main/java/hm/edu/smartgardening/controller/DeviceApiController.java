@@ -9,11 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin
+@CrossOrigin()
 @RequestMapping("/api/devices")
 public class DeviceApiController {
 
@@ -25,12 +24,9 @@ public class DeviceApiController {
         this.mapper = mapper;
     }
 
-
     @GetMapping()
     public List<DeviceBriefDto> getAllDevices() {
-        return devices.getAll()
-                .map(device -> mapper.map(device, DeviceBriefDto.class))
-                .collect(Collectors.toList());
+        return devices.getAll().map(device -> mapper.map(device, DeviceBriefDto.class)).collect(Collectors.toList());
     }
 
     @GetMapping("{uuid}/config")
@@ -44,9 +40,7 @@ public class DeviceApiController {
     @GetMapping("{uuid}/measurements")
     public List<GetMeasurementDto> getAllMeasurements(@PathVariable UUID uuid) {
         final Device device = devices.getByUuidOrThrow(uuid);
-        return device.getMeasurements()
-                .stream()
-                .map(it -> mapper.map(it, GetMeasurementDto.class))
+        return device.getMeasurements().stream().map(it -> mapper.map(it, GetMeasurementDto.class))
                 .collect(Collectors.toList());
     }
 
@@ -72,7 +66,7 @@ public class DeviceApiController {
         final Device device = devices.getByUuidOrThrow(uuid);
         if (devicePatch.getName() != null)
             device.setName(devicePatch.getName());
-        if(devicePatch.getActivated() != null)
+        if (devicePatch.getActivated() != null)
             device.setActivated(devicePatch.getActivated());
         devices.updateDeviceOrThrow(device);
         return mapper.map(device, DevicePatchDto.class);

@@ -1,14 +1,5 @@
-<style scoped>
-.devices {
-  padding-top: 20px;
-  padding-left: 100px;
-  padding-right: 100px;
-  padding-bottom: 20px;
-}
-</style>
-
 <template>
-  <div class="home">
+  <div>
     <Devices class="devices" />
   </div>
 </template>
@@ -20,7 +11,7 @@ import Devices from "@/components/Devices.vue";
 export default {
   name: "Home",
   components: {
-    Devices
-  }
+    Devices,
+  },
 };
 </script>

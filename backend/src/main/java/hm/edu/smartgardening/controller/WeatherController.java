@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 
 
 @RestController
-@CrossOrigin
 @RequestMapping("/edge/weather")
 public class WeatherController {
 
