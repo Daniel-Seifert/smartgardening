@@ -5,11 +5,12 @@ import hm.edu.smartgardening.model.Config;
 import hm.edu.smartgardening.model.Device;
 import hm.edu.smartgardening.service.DeviceService;
 import org.modelmapper.ModelMapper;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
@@ -42,11 +43,12 @@ public class DeviceApiController {
     }
 
     @GetMapping("{uuid}/measurements")
-    public List<GetMeasurementDto> getAllMeasurements(@PathVariable UUID uuid) {
+    public List<GetMeasurementDto> getAllMeasurements(@PathVariable UUID uuid, @RequestParam @DateTimeFormat(pattern = "dd.MM.yyyy") Date since) {
         final Device device = devices.getByUuidOrThrow(uuid);
         return device.getMeasurements()
                 .stream()
                 .map(it -> mapper.map(it, GetMeasurementDto.class))
+                .filter(it -> it.getCreateDate().after(since))
                 .collect(Collectors.toList());
     }
 
