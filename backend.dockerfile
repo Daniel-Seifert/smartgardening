@@ -9,6 +9,7 @@ COPY ./frontend/package*.json ./
 RUN npm install
 
 COPY ./frontend ./
+RUN echo "export const baseUrl = 'https://smart-gardening.herokuapp.com';" > ./src/store/baseUrl.ts
 RUN npm run build
 
 # ---------------------
