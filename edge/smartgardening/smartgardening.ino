@@ -2,8 +2,10 @@
 #include <WiFiNINA.h>
 #include "web.h"
 #include "config.h"
+#include "api.h"
 
 bool ssid_set = false;
+bool wifi_connected = false;
 
 void setup() {
   //Initialize serial and wait for port to open:
@@ -17,17 +19,33 @@ void setup() {
   String password = getSsidPw();
   ssid_set = ssid.length() > 0 && password.length() > 0;
   if (!ssid_set) {
-    apSetup();
+    // Setup access point
+    while (!apSetup()) {}
+    // Host access point
+    while (!apRun()) {}
+    // Write back ssid and password from user input
+    ssid = getSsid();
+    password = getSsidPw();
   } else {
-    //apSetup();
     Serial.println("Loaded config for access point: " + ssid + " with password length: " + password.length());
   }
 
+  wifi_connected = connectWifi(ssid, password, 5);
+  if (!wifi_connected) {
+    Serial.println("Unable to connect to wifi!");
+  }
+  apiConnect();
 }
 
 
 void loop() {
-  // Host access point
-  while (!ssid_set && !apRun()) {}
-  //apRun();
+  if (!wifi_connected) {
+    Serial.println("Unable to connect to WIFI in main loop!");
+  }
+
+  String ssid = getSsid();
+  String password = getSsidPw();
+  wifi_connected = connectWifi(ssid, password, 5);
+  apiRegister();
+  delay(5000);
 }

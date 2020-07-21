@@ -5,20 +5,18 @@
 
 char ssid[] = "test_wifi";        // your network SSID (name)
 char pass[] = "password";    // your network password (use for WPA, or use as key for WEP)
-int keyIndex = 0;                // your network key Index number (needed only for WEP)
-WiFiServer server(80);
-int status = WL_IDLE_STATUS;
+WiFiServer web_server(80);
+int web_status = WL_IDLE_STATUS;
 
 void printWiFiStatus();
 
-void apSetup() {
+bool apSetup() {
   Serial.println("Access Point Web Server");
 
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
-    // don't continue
-    while (true);
+    return false;
   }
 
   String fv = WiFi.firmwareVersion();
@@ -26,17 +24,13 @@ void apSetup() {
     Serial.println("Please upgrade the firmware");
   }
 
-  // by default the local IP address of will be 192.168.4.1
-  // you can override it with the following:
-  // WiFi.config(IPAddress(10, 0, 0, 1));
-
   // print the network name (SSID);
   Serial.print("Creating access point named: ");
   Serial.println(ssid);
 
   // Create open network. Change this line if you want to create an WEP network:
-  status = WiFi.beginAP(ssid, pass);
-  if (status != WL_AP_LISTENING) {
+  web_status = WiFi.beginAP(ssid, pass);
+  if (web_status != WL_AP_LISTENING) {
     Serial.println("Creating access point failed");
     // don't continue
     while (true);
@@ -46,19 +40,20 @@ void apSetup() {
   delay(10000);
 
   // start the web server on port 80
-  server.begin();
+  web_server.begin();
 
   // you're connected now, so print out the status
   printWiFiStatus();
+  return true;
 }
 
 int apRun() {
   // compare the previous status to the current status
-  if (status != WiFi.status()) {
+  if (web_status != WiFi.status()) {
     // it has changed update the variable
-    status = WiFi.status();
+    web_status = WiFi.status();
 
-    if (status == WL_AP_CONNECTED) {
+    if (web_status == WL_AP_CONNECTED) {
       // a device has connected to the AP
       Serial.println("Device connected to AP");
     } else {
@@ -67,7 +62,7 @@ int apRun() {
     }
   }
 
-  WiFiClient client = server.available();   // listen for incoming clients
+  WiFiClient client = web_server.available();   // listen for incoming clients
   String new_ssid = "";
   String new_password = "";
   bool setSSID = false;

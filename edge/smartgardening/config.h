@@ -83,16 +83,16 @@ String getSsidPw () {
    ##############################################
 */
 
-int storeWifiData(String ssid, String password) {
+bool storeWifiData(String ssid, String password) {
   if (ssid.length() == 0 || password.length() == 0) {
-    return 0;
+    return false;
   }
 
   writeNulled(ssid, ssid_offset, ssid_bytes);
   writeNulled(password, ssid_pw_offset, ssid_pw_bytes);
 
   Serial.println("Stored SSID: " + ssid + ", password-length: " + password.length());
-  return 1;
+  return true;
 }
 
 
