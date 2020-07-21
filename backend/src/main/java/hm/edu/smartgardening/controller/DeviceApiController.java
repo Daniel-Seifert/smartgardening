@@ -41,11 +41,9 @@ public class DeviceApiController {
 
     @GetMapping("{uuid}/measurements")
     public List<GetMeasurementDto> getAllMeasurements(@PathVariable UUID uuid, @RequestParam @DateTimeFormat(pattern = "dd.MM.yyyy") Date since) {
-        final Device device = devices.getByUuidOrThrow(uuid);
-        return device.getMeasurements()
+        return devices.getMeasurementsByUuidSince(uuid, since)
                 .stream()
                 .map(it -> mapper.map(it, GetMeasurementDto.class))
-                .filter(it -> it.getCreateDate().after(since))
                 .collect(Collectors.toList());
     }
 

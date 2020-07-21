@@ -35,4 +35,8 @@ public class Measurement {
      * Value in range [0.0, 1.0]
      */
     private float value;
+
+    @ManyToOne
+    @JoinColumn(name="device_id", nullable = false)
+    private Device device;
 }

@@ -43,6 +43,7 @@ public class DeviceEdgeController {
     public AddMeasurementDto addMeasurement(@PathVariable UUID uuid, @RequestBody AddMeasurementDto measurement) {
         final Device device = devices.getByUuidOrThrow(uuid);
         final Measurement newMeasurement = mapper.map(measurement, Measurement.class);
+        newMeasurement.setDevice(device);
         device.addMeasurement(newMeasurement);
         device.getStatus().setHumidity(newMeasurement.getValue());
         devices.updateDeviceOrThrow(device);
