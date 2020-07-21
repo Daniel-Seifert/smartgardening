@@ -23,7 +23,7 @@ public class Measurement {
     @EqualsAndHashCode.Exclude
     private Long id;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     @EqualsAndHashCode.Exclude
     private MeasureType measureType = MeasureType.MOISTURE;
 
