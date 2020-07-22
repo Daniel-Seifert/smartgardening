@@ -3,6 +3,7 @@
 #include "web.h"
 #include "config.h"
 #include "api.h"
+#include "watering.h"
 
 bool ssid_set = false;
 bool wifi_connected = false;
@@ -46,6 +47,8 @@ void loop() {
   String ssid = getSsid();
   String password = getSsidPw();
   wifi_connected = connectWifi(ssid, password, 5);
-  apiRegister();
-  delay(5000);
+  //apiRegister();
+  //delay(5000);
+  wateringLoop();
+  delay(1000);
 }
