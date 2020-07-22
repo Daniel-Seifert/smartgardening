@@ -35,24 +35,26 @@ int max_watering_sec_default = 10;
    ##############################################
 */
 
-void writeNulled(String value, int offset, int length) {
+void writeNulled(char* value, int offset, int length) {
   for (int i = 0; i < length; i++) {
-    if (i < value.length()) {
-      EEPROM.write(offset + i, value.charAt(i));
+    if (i < strlen(value)) {
+      EEPROM.write(offset + i, value[i]);
     } else {
       EEPROM.write(offset + i, '\0');
     }
   }
 }
 
-String readString(int offset, int length) {
-  String result = "";
+char* readString(int offset, int length) {
+  char* result = malloc(sizeof(char) * length);
   for (int i = 0; i < length; i++) {
     char next = EEPROM.read(offset + i);
     if (next != '\0') {
-      result += next;
+      result[i] = next;
     } else {
-      break;
+      result[i] = 0;
+      result = realloc(result, sizeof(char) * (i + 1));
+      return result;
     }
   }
   return result;
@@ -93,7 +95,7 @@ void writeBool(int offset, bool value) {
    ##############################################
 */
 
-String getUuid () {
+char* getUuid () {
   return readString(uuid_offset, uuid_bytes);
 }
 
@@ -133,11 +135,11 @@ bool isActive() {
   return readBool(active_offset);
 }
 
-String getSsid () {
+char* getSsid () {
   return readString(ssid_offset, ssid_bytes);
 }
 
-String getSsidPw () {
+char* getSsidPw () {
   return readString(ssid_pw_offset, ssid_pw_bytes);
 }
 
@@ -147,8 +149,19 @@ String getSsidPw () {
    ##############################################
 */
 
+void clearEEPROM() {
+  Serial.println("###### CLEAR EEPROM ######");
+  for (int i = 0; i < EEPROM.length(); i++) {
+    EEPROM.write(i, 0);
+  }
+}
+
 void printConfig() {
+  char* uuid = getUuid();
+
   Serial.println("Config from EEPROM ##############");
+  Serial.print("UUID: ");
+  Serial.println(uuid);
   Serial.print("min humidity: ");
   Serial.println(getMinHumidity());
   Serial.print("max humidity: ");
@@ -160,6 +173,8 @@ void printConfig() {
   Serial.print("Is Active: ");
   Serial.println(isActive());
   Serial.println("Config from EEPROM ##############");
+
+  free(uuid);
 }
 
 /*
@@ -168,7 +183,7 @@ void printConfig() {
    ##############################################
 */
 
-void storeUuid (String uuid) {
+void storeUuid (char* uuid) {
   writeNulled(uuid, uuid_offset, uuid_bytes);
 }
 
@@ -192,15 +207,18 @@ void storeActive(bool value) {
   writeBool(active_offset, value);
 }
 
-bool storeWifiData(String ssid, String password) {
-  if (ssid.length() == 0 || password.length() == 0) {
+bool storeWifiData(char* ssid, char* password) {
+  if (strlen(ssid) == 0 || strlen(password) == 0) {
     return false;
   }
 
   writeNulled(ssid, ssid_offset, ssid_bytes);
   writeNulled(password, ssid_pw_offset, ssid_pw_bytes);
 
-  Serial.println("Stored SSID: " + ssid + ", password-length: " + password.length());
+  Serial.print("Stored SSID: ");
+  Serial.print(ssid);
+  Serial.print(" with password length: ");
+  Serial.println(strlen(password));
   return true;
 }
 

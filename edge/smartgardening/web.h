@@ -2,6 +2,7 @@
 #define WEB_H
 
 #include "config.h"
+#include "stringMethods.h"
 
 char ssid[] = "test_wifi";        // your network SSID (name)
 char pass[] = "password";    // your network password (use for WPA, or use as key for WEP)
@@ -17,11 +18,6 @@ bool apSetup() {
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
     return false;
-  }
-
-  String fv = WiFi.firmwareVersion();
-  if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-    Serial.println("Please upgrade the firmware");
   }
 
   // print the network name (SSID);
@@ -134,7 +130,17 @@ int apRun() {
     // close the connection:
     client.stop();
     Serial.println("client disconnected");
-    return storeWifiData(new_ssid, new_password);
+
+    char* ssidToStore = mallocString(new_ssid.length());
+    strcpy (ssidToStore, new_ssid.c_str());
+    char* passToStore = mallocString(new_password.length());
+    strcpy (passToStore, new_password.c_str());
+
+    bool stored = storeWifiData(ssidToStore, passToStore);
+
+    free(ssidToStore);
+    free(passToStore);
+    return stored;
   }
 }
 

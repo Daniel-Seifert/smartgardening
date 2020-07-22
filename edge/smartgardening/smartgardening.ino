@@ -26,6 +26,10 @@ int freeMemory() {
 #endif  // __arm__
 }
 
+void printMemory() {
+  Serial.print("Free Memory: ");
+  Serial.println(freeMemory());
+}
 
 void setup() {
   //Initialize serial and wait for port to open:
@@ -34,51 +38,64 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
+
+  Serial.println("Starting setup...");
+  printMemory();
+  clearEEPROM();
+  //storeUuid("");
   printConfig();
 
-  String ssid = getSsid();
-  String password = getSsidPw();
-  ssid_set = ssid.length() > 0 && password.length() > 0;
+  char* ssid = getSsid();
+  char* password = getSsidPw();
+  ssid_set = strlen(ssid) > 0 && strlen(password) > 0;
   if (!ssid_set) {
     // Setup access point
     while (!apSetup()) {}
     // Host access point
     while (!apRun()) {}
+    free(ssid);
+    free(password);
+
     // Write back ssid and password from user input
     ssid = getSsid();
     password = getSsidPw();
   } else {
-    Serial.println("Loaded config for access point: " + ssid + " with password length: " + password.length());
+    Serial.print("Loaded config for access point: ");
+    Serial.print(ssid);
+    Serial.print(" with password length: ");
+    Serial.println(strlen(password));
   }
 
   wifi_connected = connectWifi(ssid, password, 5);
   if (!wifi_connected) {
     Serial.println("Unable to connect to wifi!");
   }
-  apiConnect();
+  Serial.println("Finished setup");
+  printMemory();
+  free(ssid);
+  free(password);
 }
-
-void printMemory() {
-  Serial.print("Free Memory: ");
-  Serial.println(freeMemory());
-}
-
-int count = 0;
 
 void loop() {
   if (!wifi_connected) {
     Serial.println("Unable to connect to WIFI in main loop!");
   }
 
-  String ssid = getSsid();
-  String password = getSsidPw();
+  char* uuid = getUuid();
+  char* ssid = getSsid();
+  char* password = getSsidPw();
   wifi_connected = connectWifi(ssid, password, 5);
-  if (count < 1) {
+
+  if (strlen(uuid) == 0) {
     apiRegister();
-    count++;
+    storeUuid("Unique");
   }
 
   printMemory();
   wateringLoop();
-  delay(5000);
+  delay(1000);
+
+  free(uuid);
+  free(ssid);
+  free(password);
 }
