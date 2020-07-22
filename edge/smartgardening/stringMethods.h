@@ -18,8 +18,9 @@ int getWord(WiFiSSLClient * api_client, Byte **word, unsigned * wordLength) {
       jsonStarted = true;
 
     if (jsonStarted) {
-      if (*wordLength == 0 || *wordLength >= allocated_mem / rf)
+      if (*wordLength == 0 || *wordLength >= allocated_mem / rf){
         *word = (Byte * ) realloc(*word, sizeof(Byte) * (allocated_mem *= rf));
+      }
 
       if (!*word)
         return -1;

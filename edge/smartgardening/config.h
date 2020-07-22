@@ -45,19 +45,22 @@ void writeNulled(char* value, int offset, int length) {
   }
 }
 
-void readString(char** result, int offset, int length) {
-  *result = malloc(sizeof(char) * length);
+char* readString(int offset, int length) {
+  char* result = malloc(sizeof(char) * length);
   
   for (int i = 0; i < length; i++) {
     char next = EEPROM.read(offset + i);
     if (next != '\0') {
-      (*result)[i] = next;
+      result[i] = next;
     } else {
-      (*result)[i] = 0;
-      *result = realloc(*result, sizeof(char) * (i + 1));
-      return;
+      if (i != 0) {
+        result = realloc(result, sizeof(char) * (i+1));
+      }
+      result[i] = 0;
+      return result;
     }
   }
+  return result;
 }
 
 int readInt(int offset) {
@@ -131,16 +134,16 @@ bool isActive() {
   return readBool(active_offset);
 }
 
-void getUuid (char **uuid) {
-  readString(uuid, uuid_offset, uuid_bytes);
+char* getUuid () {
+  return readString(uuid_offset, uuid_bytes);
 }
 
-void getSsid (char** ssid) {
-  readString(ssid, ssid_offset, ssid_bytes);
+char* getSsid () {
+  return readString(ssid_offset, ssid_bytes);
 }
 
-void getSsidPw (char** pw) {
-  readString(pw, ssid_pw_offset, ssid_pw_bytes);
+char* getSsidPw () {
+  return readString(ssid_pw_offset, ssid_pw_bytes);
 }
 
 /*
@@ -157,8 +160,8 @@ void clearEEPROM() {
 }
 
 void printConfig() {
-  char* uuid;
-  getUuid(&uuid);
+  char* uuid = getUuid();
+  
   Serial.println("Config from EEPROM ##############");
   Serial.print("UUID: ");
   Serial.println(uuid);
