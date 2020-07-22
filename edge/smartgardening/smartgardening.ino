@@ -3,6 +3,7 @@
 #include "web.h"
 #include "config.h"
 #include "api.h"
+#include "watering.h"
 
 bool ssid_set = false;
 bool wifi_connected = false;
@@ -33,6 +34,8 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
+  printConfig();
+
   String ssid = getSsid();
   String password = getSsidPw();
   ssid_set = ssid.length() > 0 && password.length() > 0;
@@ -74,7 +77,8 @@ void loop() {
     apiRegister();
     count++;
   }
-  
+
   printMemory();
+  wateringLoop();
   delay(5000);
 }
