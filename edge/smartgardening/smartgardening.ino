@@ -45,8 +45,10 @@ void setup() {
   //storeUuid("");
   printConfig();
 
-  char* ssid = getSsid();
-  char* password = getSsidPw();
+  char* ssid;
+  getSsid(&ssid);
+  char* password;
+  getSsidPw(&password);
   ssid_set = strlen(ssid) > 0 && strlen(password) > 0;
   if (!ssid_set) {
     // Setup access point
@@ -57,8 +59,8 @@ void setup() {
     free(password);
 
     // Write back ssid and password from user input
-    ssid = getSsid();
-    password = getSsidPw();
+    getSsid(&ssid);
+    getSsidPw(&password);
   } else {
     Serial.print("Loaded config for access point: ");
     Serial.print(ssid);
@@ -81,18 +83,21 @@ void loop() {
     Serial.println("Unable to connect to WIFI in main loop!");
   }
 
-  char* uuid = getUuid();
-  char* ssid = getSsid();
-  char* password = getSsidPw();
-  wifi_connected = connectWifi(ssid, password, 5);
+  char* uuid;
+  getUuid(&uuid);
+  char* ssid;
+  getSsid(&ssid);
+  char* password;
+  getSsidPw(&password);
+  //wifi_connected = connectWifi(ssid, password, 5);
 
-  if (strlen(uuid) == 0) {
-    apiRegister();
-    storeUuid("Unique");
-  }
+  //if (strlen(uuid) == 0) {
+  //  apiRegister();
+  //  storeUuid("Unique");
+  //}
 
   printMemory();
-  wateringLoop();
+  //wateringLoop();
   delay(1000);
 
   free(uuid);

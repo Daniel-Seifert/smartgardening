@@ -5,7 +5,7 @@
 #include "stringMethods.h"
 
 char ssid[] = "test_wifi";        // your network SSID (name)
-char pass[] = "password";    // your network password (use for WPA, or use as key for WEP)
+char pass[] = "password";        // your network password (use for WPA, or use as key for WEP)
 WiFiServer web_server(80);
 int web_status = WL_IDLE_STATUS;
 
@@ -31,9 +31,6 @@ bool apSetup() {
     // don't continue
     while (true);
   }
-
-  // wait 10 seconds for connection:
-  delay(10000);
 
   // start the web server on port 80
   web_server.begin();

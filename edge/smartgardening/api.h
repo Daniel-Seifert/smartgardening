@@ -60,7 +60,7 @@ void httpGet(char * endpoint) {
   free(sendMessage);
 }
 
-void httpPost(char * endpoint, char * body) {
+char* httpPost(char * endpoint, char * body) {
   apiConnect();
   
   char * sendMessage = malloc(sizeof(char) * (strlen(endpoint) + strlen(F("Post ")) + strlen(F(" HTTP/1.1")) + 1));
@@ -83,19 +83,20 @@ void httpPost(char * endpoint, char * body) {
   api_client.println(body);
 
   delay(2000);
-  Byte *word = NULL;
+  char *word = NULL;
   int wordlength;
-  Serial.println(getWord(&api_client, &word, &wordlength));
-  Serial.println(word);
-  free(word);
-  Serial.flush();
+  getWord(&api_client, &word, &wordlength);
 
   // Free stuff
   free(sendMessage);
+
+  return word;
 }
 
 void apiRegister() {
-  httpPost("/edge/devices/register", "");
+  char* response = httpPost("/edge/devices/register", "");
+  Serial.println(response);
+  free(response);
 }
 
 #endif
