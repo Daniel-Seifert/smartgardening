@@ -57,6 +57,7 @@ void setup()
   {
     Serial.println("Unable to connect to wifi!");
   }
+  setupPins();
   Serial.println("Finished setup");
   free(ssid);
   free(password);
@@ -86,6 +87,5 @@ void loop()
   }
 
   wateringLoop();
-  printMemory();
   delay(1000);
 }

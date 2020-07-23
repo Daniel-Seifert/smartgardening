@@ -3,7 +3,7 @@
 
 #define MoisturePin A0
 #define RelayPin 8
-#define MoistureSendInterval 10L*60L*1000L // 10 m
+#define MoistureSendInterval 1L*60L*1000L // 1 m
 #define WeatherRequestInterval 60L*60L*3L*1000L // 3 hours
 #define MinWateringInterval 60L*1000L // 1m
 #define ConfPullInterval 1L*60L*60L*1000L // 1 h
@@ -37,6 +37,11 @@ void switchRelay(bool value) {
     Serial.println("Turn pump: OFF");
     digitalWrite(RelayPin, LOW);
   }
+}
+
+void setupPins() {
+  pinMode(RelayPin, OUTPUT);
+  switchRelay(false);
 }
 
 void sendMoisture(int moisture) {
