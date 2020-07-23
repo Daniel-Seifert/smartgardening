@@ -5,7 +5,7 @@
         <v-expansion-panel v-for="(device, i) in devices" :key="i">
           <v-expansion-panel-header v-slot="{ open }">
             <v-layout align-center justify-space-between row fill-height>
-              <v-flex xs6>
+              <v-flex lg6 xs5>
                 <v-badge
                   :color="device.activated ? 'green' : 'red'"
                   :content="device.activated ? 'active' : 'inactive'"
@@ -13,14 +13,14 @@
                   <h2>{{ device.name }}</h2>
                 </v-badge>
               </v-flex>
-              <v-flex xs5>
+              <v-flex lg5 xs4>
                 <v-fade-transition leave-absolute>
                   <span v-if="open" key="0">
                     Aktuellste Messungen
                   </span>
                 </v-fade-transition>
               </v-flex>
-              <v-flex xs1>
+              <v-flex lg1 xs3>
                 <v-btn
                   :disabled="!device.activated"
                   class="mx-4"
@@ -37,11 +37,11 @@
           </v-expansion-panel-header>
 
           <v-expansion-panel-content>
-            <v-layout row wrap>
-              <v-flex>
+            <v-layout align-center justify-space-between row fill-height>
+              <v-flex lg8 xs12>
                 <line-chart
                   v-if="device.activated"
-                  :height="200"
+                  :height="175"
                   :chart-data="measurementDataCollection(device.id)"
                   :options="options"
                 ></line-chart>
@@ -49,10 +49,10 @@
                   Das Gerät muss für Messungen aktiviert werden
                 </h2>
               </v-flex>
-              <v-flex>
+              <v-flex lg1 xs0>
                 <v-divider vertical class="mx-4"></v-divider>
               </v-flex>
-              <v-flex>
+              <v-flex lg4 xs12>
                 Informationen zum Gerät
                 <v-list-item>
                   <v-list-item-content>
@@ -77,23 +77,24 @@
                   </v-list-item-content>
                 </v-list-item>
               </v-flex>
-            </v-layout>
-
-            <v-layout align-center justify-end row>
-              <v-flex xs2>
-                <v-btn
-                  v-if="!device.activated"
-                  text
-                  color="success"
-                  @click="activateDevices(device.id)"
-                >
-                  Aktivieren
-                </v-btn>
-              </v-flex>
-              <v-flex xs2>
-                <v-btn text color="error" @click="deleteDevice(device.id)">
-                  Löschen
-                </v-btn>
+              <v-flex lg12 xs10>
+                <v-layout align-center justify-end row>
+                  <v-flex xs2>
+                    <v-btn
+                      v-if="!device.activated"
+                      text
+                      color="success"
+                      @click="activateDevices(device.id)"
+                    >
+                      Aktivieren
+                    </v-btn>
+                  </v-flex>
+                  <v-flex xs2>
+                    <v-btn text color="error" @click="deleteDevice(device.id)">
+                      Löschen
+                    </v-btn>
+                  </v-flex>
+                </v-layout>
               </v-flex>
             </v-layout>
           </v-expansion-panel-content>

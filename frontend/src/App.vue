@@ -8,7 +8,7 @@
           contain
           src="./assets/min-logo.png"
           transition="scale-transition"
-          width="45"
+          width="40"
         />
         <h2>
           SmartGardening
