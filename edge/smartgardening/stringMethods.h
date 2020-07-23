@@ -7,7 +7,7 @@
 
 typedef char Byte;
 
-int getWord(WiFiSSLClient * api_client, Byte **word, unsigned * wordLength) {
+int getWord(WiFiSSLClient * api_client, Byte **word, int * wordLength) {
   unsigned rf = 2;
   unsigned allocated_mem = 16;
   int c;
@@ -34,14 +34,14 @@ int getWord(WiFiSSLClient * api_client, Byte **word, unsigned * wordLength) {
   }
 
   if (*wordLength > 0) {
-    *word = (Byte*)realloc(*word, sizeof(Byte) * (*wordLength));
+    *word = (Byte*)realloc(*word, sizeof(Byte) * ((*wordLength)));
     (*word)[*wordLength] = 0;
   }
   return 0;
 }
 
 char* mallocString(int length) {
-  char* result = malloc(sizeof(char)*length);
+  char* result = (char *) malloc(sizeof(char)*length);
   if (!result) {
     Serial.println("Unable to malloc string");
   }
