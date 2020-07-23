@@ -50,6 +50,7 @@ void setup() {
   free(ssid);
   free(password);
 }
+int counterValue = 0;
 
 void loop() {
   if (!wifi_connected) {
@@ -73,5 +74,16 @@ void loop() {
   }
 
   //wateringLoop();
-  delay(1000);
+//  apiPostMeasurement(counterValue++);
+  if (counterValue%2 == 0) {
+    apiSetPumping(true);
+    
+  }
+  else {
+    apiSetPumping(false);
+  }
+  counterValue++;
+  printConfig();
+  
+  delay(5000);
 }

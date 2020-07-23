@@ -6,6 +6,8 @@
 #include <string.h>
 #include "stringMethods.h"
 
+const int bufferSize = 300;
+
 WiFiSSLClient api_client;
 char api_server[] = "smart-gardening.herokuapp.com";
 
@@ -33,38 +35,10 @@ void apiConnect() {
   }
 }
 
-void httpGet(char * endpoint) {
+void httpRequest(const char * TYPE, const char * endpoint, const  char * body) {
   apiConnect();
-
-  char * sendMessage = (char * )malloc(sizeof(char) * (strlen(endpoint) + strlen(F("GET ")) + strlen(F(" HTTP/1.1")) + 1));
-  sprintf(sendMessage, "GET %s HTTP/1.1", endpoint);
-  Serial.println(sendMessage);
-  api_client.println(sendMessage);
-  api_client.println("Host: smart-gardening.herokuapp.com");
-  api_client.println("Connection: close");
-  if (api_client.println() == 0) {
-    Serial.println("Failed to send request");
-    return NULL;
-  }
-  free(sendMessage);
-  delay(2000);
-
-  Byte *word = NULL;
-  int wordlength = 0;
-  Serial.println(getWord(&api_client, &word, &wordlength));
-  Serial.println(word);
-  free(word);
-  Serial.flush();
-
-  // Free stuff
-  
-}
-
-char *  httpPost(const char * endpoint, const char * body) {
-  apiConnect();
-  
-  char * sendMessage = (char *)malloc(sizeof(char) * (strlen(endpoint) + strlen(F("Post ")) + strlen(F(" HTTP/1.1")) + 1));
-  sprintf(sendMessage, "POST %s HTTP/1.1", endpoint);
+  char * sendMessage = (char *)malloc(sizeof(char) * (strlen(TYPE) + strlen(endpoint) + strlen(F(" HTTP/1.1")) + 1));
+  sprintf(sendMessage, "%s %s HTTP/1.1",TYPE, endpoint);
   Serial.print(F("Sending Message to enpoint: "));
   Serial.println(sendMessage);
 
@@ -79,22 +53,36 @@ char *  httpPost(const char * endpoint, const char * body) {
     Serial.println(F("Failed to send request"));
     return NULL;
   }
-
+  api_client.println(body);
   // Free stuff
   free(sendMessage);
-  delay(1000);
-  api_client.println(body);
+  delay(500);
+}
+
+void httpGet(char * endpoint) {
+  httpRequest("GET", endpoint, "");
+}
+
+void httpPut(const char * endpoint, const char * body){
+  httpRequest("PUT", endpoint, body);
+}
+
+void httpPost(const char * endpoint, const char * body) {
+  httpRequest("POST", endpoint, body);
+}
+
+char * readClient() {
   char *word = NULL;
   int wordlength = 0;
   getWord(&api_client, &word, &wordlength);
-  Serial.println(wordlength);
-  
   return word;
 }
 
 void apiRegister() {
-  char * response = httpPost("/edge/devices/register", "");
-  StaticJsonDocument<300> doc;
+  httpPost("/edge/devices/register", "");
+  char * response = readClient();
+  
+  StaticJsonDocument<bufferSize> doc;
   deserializeJson(doc, response);
   Serial.print("Setting uuid: ");
   serializeJsonPretty(doc["id"], Serial);
@@ -102,6 +90,98 @@ void apiRegister() {
   const char * data = doc["id"];
   storeUuid(data);
   free(response);
+}
+
+void apiPostMeasurement(int value) {
+  char * endpoint = mallocString(sizeof(char) * (strlen("/edge/devices/") + strlen("/measures") + uuid_bytes + 1));
+  char * uuid = getUuid();
+  char * body = mallocString(sizeof(char) * bufferSize);
+  sprintf(endpoint, "/edge/devices/%s/measures", uuid);
+  StaticJsonDocument<bufferSize> doc;
+  doc["value"] = value;
+  doc["measureType"] = "MOISTURE";
+  serializeJson(doc, body, bufferSize);
+  
+  Serial.print("apiPostMeasurement sending body: ");
+  Serial.println(body);
+  httpPost(endpoint, body);
+  free(body);
+  free(uuid);
+  free(endpoint);  
+
+  char * response = readClient();
+  deserializeJson(doc, response);
+  Serial.print("Sent measurment. Response: ");
+  serializeJsonPretty(doc, Serial);
+  Serial.println();
+  free(response);
+}
+
+void apiSetPumping(bool isPumping) {
+  char * endpoint = mallocString(sizeof(char) * (strlen("/edge/devices/") + strlen("/status") + uuid_bytes + 1));
+  char * uuid = getUuid();
+  char * body = mallocString(sizeof(char) * bufferSize);
+  sprintf(endpoint, "/edge/devices/%s/status", uuid);
+  StaticJsonDocument<bufferSize> doc;
+  doc["pumping"] = isPumping;
+  
+  serializeJson(doc, body, bufferSize);
+
+  Serial.print("apiPutPumping sending body: ");
+  Serial.println(body);
+  httpPut(endpoint, body);
+  free(body);
+  free(uuid);
+  free(endpoint);
+
+  char * response = readClient();
+  deserializeJson(doc, response);
+  Serial.print("Sent pumping. Response: ");
+  serializeJsonPretty(doc, Serial);
+  Serial.println();
+  free(response);
+}
+
+void apiGetConfig() {
+  char * endpoint = mallocString(sizeof(char) * (strlen("/edge/devices/") + strlen("/config") + uuid_bytes + 1));
+  char * uuid = getUuid();
+  sprintf(endpoint, "/edge/devices/%s/config", uuid);
+  httpGet(endpoint);
+  free(endpoint);
+  free(uuid);
+
+  char * response = readClient();
+  StaticJsonDocument<bufferSize> doc;
+  deserializeJson(doc, response);
+  Serial.print("Got config: ");
+  serializeJsonPretty(doc, Serial);
+  Serial.println();
+
+  storeMinHumidity(doc["minHumidity"]);
+  storeMaxHumidity(doc["maxHumidity"]);
+  storeMinWateringSec(doc["minWateringSeconds"]);
+  storeMaxWateringSec(doc["maxWateringSeconds"]);
+  storeActive(doc["activated"]);
+  free(response);
+}
+
+bool isRaining() {
+  char * endpoint = mallocString(sizeof(char) * (strlen("/edge/devices/") + strlen("/weather") + uuid_bytes + 1));
+  char * uuid = getUuid();
+  sprintf(endpoint, "/edge/devices/%s/weather", uuid);
+  httpGet(endpoint);
+  free(endpoint);
+  free(uuid);
+
+  char * response = readClient();
+  StaticJsonDocument<bufferSize> doc;
+  deserializeJson(doc, response);
+  Serial.print("Got WeatherData: ");
+  serializeJsonPretty(doc, Serial);
+  Serial.println();
+  bool rain = doc["rain"];
+  free(response);
+  return rain;
 }
 
 #endif
