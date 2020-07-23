@@ -36,7 +36,7 @@ void apiConnect() {
 void httpGet(char * endpoint) {
   apiConnect();
 
-  char * sendMessage = malloc(sizeof(char) * (strlen(endpoint) + strlen(F("GET ")) + strlen(F(" HTTP/1.1")) + 1));
+  char * sendMessage = (char * )malloc(sizeof(char) * (strlen(endpoint) + strlen(F("GET ")) + strlen(F(" HTTP/1.1")) + 1));
   sprintf(sendMessage, "GET %s HTTP/1.1", endpoint);
   Serial.println(sendMessage);
   api_client.println(sendMessage);
@@ -44,26 +44,26 @@ void httpGet(char * endpoint) {
   api_client.println("Connection: close");
   if (api_client.println() == 0) {
     Serial.println("Failed to send request");
-    return;
+    return NULL;
   }
-
+  free(sendMessage);
   delay(2000);
 
   Byte *word = NULL;
-  int wordlength;
+  int wordlength = 0;
   Serial.println(getWord(&api_client, &word, &wordlength));
   Serial.println(word);
   free(word);
   Serial.flush();
 
   // Free stuff
-  free(sendMessage);
+  
 }
 
-char* httpPost(char * endpoint, char * body) {
+char *  httpPost(const char * endpoint, const char * body) {
   apiConnect();
   
-  char * sendMessage = malloc(sizeof(char) * (strlen(endpoint) + strlen(F("Post ")) + strlen(F(" HTTP/1.1")) + 1));
+  char * sendMessage = (char *)malloc(sizeof(char) * (strlen(endpoint) + strlen(F("Post ")) + strlen(F(" HTTP/1.1")) + 1));
   sprintf(sendMessage, "POST %s HTTP/1.1", endpoint);
   Serial.print(F("Sending Message to enpoint: "));
   Serial.println(sendMessage);
@@ -77,24 +77,23 @@ char* httpPost(char * endpoint, char * body) {
   api_client.println(F("Content-Type: application/json"));
   if (api_client.println() == 0) {
     Serial.println(F("Failed to send request"));
-    return;
+    return NULL;
   }
-
-  api_client.println(body);
-
-  delay(2000);
-  char *word = NULL;
-  int wordlength;
-  getWord(&api_client, &word, &wordlength);
 
   // Free stuff
   free(sendMessage);
-
+  delay(1000);
+  api_client.println(body);
+  char *word = NULL;
+  int wordlength = 0;
+  getWord(&api_client, &word, &wordlength);
+  Serial.println(wordlength);
+  
   return word;
 }
 
 void apiRegister() {
-  char* response = httpPost("/edge/devices/register", "");
+  char * response = httpPost("/edge/devices/register", "");
   Serial.println(response);
   free(response);
 }

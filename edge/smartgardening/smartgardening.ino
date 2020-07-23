@@ -8,23 +8,23 @@
 bool ssid_set = false;
 bool wifi_connected = false;
 
-#ifdef __arm__
-// should use uinstd.h to define sbrk but Due causes a conflict
-extern "C" char* sbrk(int incr);
-#else  // __ARM__
-extern char *__brkval;
-#endif  // __arm__
-
-int freeMemory() {
-  char top;
-#ifdef __arm__
-  return &top - reinterpret_cast<char*>(sbrk(0));
-#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-  return &top - __brkval;
-#else  // __arm__
-  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-#endif  // __arm__
-}
+//#ifdef __arm__
+//// should use uinstd.h to define sbrk but Due causes a conflict
+//extern "C" char* sbrk(int incr);
+//#else  // __ARM__
+//extern char *__brkval;
+//#endif  // __arm__
+//
+//int freeMemory() {
+//  char top;
+//#ifdef __arm__
+//  return &top - reinterpret_cast<char*>(sbrk(0));
+//#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+//  return &top - __brkval;
+//#else  // __arm__
+//  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+//#endif  // __arm__
+//}
 
 void printMemory() {
   Serial.print("Free Memory: ");
@@ -41,14 +41,12 @@ void setup() {
 
   Serial.println("Starting setup...");
   printMemory();
-  clearEEPROM();
-  //storeUuid("");
+  //clearEEPROM();
+  storeUuid("");
   printConfig();
 
-  char* ssid;
-  getSsid(&ssid);
-  char* password;
-  getSsidPw(&password);
+  char* ssid = getSsid();
+  char* password = getSsidPw();
   ssid_set = strlen(ssid) > 0 && strlen(password) > 0;
   if (!ssid_set) {
     // Setup access point
@@ -59,8 +57,8 @@ void setup() {
     free(password);
 
     // Write back ssid and password from user input
-    getSsid(&ssid);
-    getSsidPw(&password);
+    ssid = getSsid();
+    password = getSsidPw();
   } else {
     Serial.print("Loaded config for access point: ");
     Serial.print(ssid);
@@ -83,24 +81,27 @@ void loop() {
     Serial.println("Unable to connect to WIFI in main loop!");
   }
 
-  char* uuid;
-  getUuid(&uuid);
-  char* ssid;
-  getSsid(&ssid);
-  char* password;
-  getSsidPw(&password);
-  //wifi_connected = connectWifi(ssid, password, 5);
+  char *uuid = getUuid();
+  char *ssid = getSsid();
+  char *password = getSsidPw();
 
-  //if (strlen(uuid) == 0) {
-  //  apiRegister();
-  //  storeUuid("Unique");
-  //}
-
-  printMemory();
-  //wateringLoop();
-  delay(1000);
-
-  free(uuid);
-  free(ssid);
+  wifi_connected = connectWifi(ssid, password, 5);
   free(password);
+  free(ssid);
+  
+  if (strlen(uuid) == 0) {
+    Serial.println(uuid);
+    free(uuid);
+    apiRegister();
+//    storeUuid("Unique");
+  }else {
+    free(uuid);
+  }
+  
+
+  //wateringLoop();
+
+  
+  printMemory();
+  delay(1000);
 }

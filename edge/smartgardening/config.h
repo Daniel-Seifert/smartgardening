@@ -4,6 +4,9 @@
 #include <EEPROM.h>
 #include<string.h>
 
+
+#include "stringMethods.h"
+
 /**
    EEPROM structure
    | UUID (16 bytes) [0-15]| Humid min (2 bytes) [16-17]| Humidity max (2 bytes) [18-19] |
@@ -29,33 +32,41 @@ int max_humidity_default = 70;
 int min_watering_sec_default = 5;
 int max_watering_sec_default = 10;
 
+#ifdef __arm__
+// should use uinstd.h to define sbrk but Due causes a conflict
+extern "C" char* sbrk(int incr);
+#else  // __ARM__
+extern char *__brkval;
+#endif  // __arm__
+
+int freeMemory() {
+  char top;
+#ifdef __arm__
+  return &top - reinterpret_cast<char*>(sbrk(0));
+#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+  return &top - __brkval;
+#else  // __arm__
+  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+#endif  // __arm__
+}
+
+void printMemorys() {
+  Serial.print("Free Memory: ");
+  Serial.println(freeMemory());
+}
+
 /*
    ##############################################
    HELPER
    ##############################################
 */
 
-void writeNulled(char* value, int offset, int length) {
+void writeNulled(char * value, int offset, int length) {
   for (int i = 0; i < length; i++) {
     if (i < strlen(value)) {
       EEPROM.write(offset + i, value[i]);
     } else {
       EEPROM.write(offset + i, '\0');
-    }
-  }
-}
-
-void readString(char** result, int offset, int length) {
-  *result = malloc(sizeof(char) * length);
-  
-  for (int i = 0; i < length; i++) {
-    char next = EEPROM.read(offset + i);
-    if (next != '\0') {
-      (*result)[i] = next;
-    } else {
-      (*result)[i] = 0;
-      *result = realloc(*result, sizeof(char) * (i + 1));
-      return;
     }
   }
 }
@@ -131,16 +142,36 @@ bool isActive() {
   return readBool(active_offset);
 }
 
-void getUuid (char **uuid) {
-  readString(uuid, uuid_offset, uuid_bytes);
+char * readString(int offset, int length) {
+  char * result = (char *)malloc(sizeof(char) * length + 1);
+  printMemorys();
+  if (result == NULL) {
+    Serial.println("Error malloc");
+  }
+
+  for (int i = 0; i < length; i++) {
+    char next = EEPROM.read(offset + i);
+    if (next != 0) {
+      result[i] = next;
+    } else {
+      result[i] = 0;
+      return result;
+    }
+  }
+  result[length] = 0;
+  return result;
 }
 
-void getSsid (char** ssid) {
-  readString(ssid, ssid_offset, ssid_bytes);
+char * getUuid () {
+  return readString(uuid_offset, uuid_bytes);
 }
 
-void getSsidPw (char** pw) {
-  readString(pw, ssid_pw_offset, ssid_pw_bytes);
+char * getSsid () {
+  return readString(ssid_offset, ssid_bytes);
+}
+
+char * getSsidPw () {
+  return readString(ssid_pw_offset, ssid_pw_bytes);
 }
 
 /*
@@ -157,8 +188,7 @@ void clearEEPROM() {
 }
 
 void printConfig() {
-  char* uuid;
-  getUuid(&uuid);
+  char* uuid = getUuid();
   Serial.println("Config from EEPROM ##############");
   Serial.print("UUID: ");
   Serial.println(uuid);
@@ -183,7 +213,7 @@ void printConfig() {
    ##############################################
 */
 
-void storeUuid (char* uuid) {
+void storeUuid (const char * uuid) {
   writeNulled(uuid, uuid_offset, uuid_bytes);
 }
 
