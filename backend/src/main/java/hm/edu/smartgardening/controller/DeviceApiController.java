@@ -26,12 +26,9 @@ public class DeviceApiController {
         this.mapper = mapper;
     }
 
-
     @GetMapping()
     public List<DeviceBriefDto> getAllDevices() {
-        return devices.getAll()
-                .map(device -> mapper.map(device, DeviceBriefDto.class))
-                .collect(Collectors.toList());
+        return devices.getAll().map(device -> mapper.map(device, DeviceBriefDto.class)).collect(Collectors.toList());
     }
 
     @GetMapping("{uuid}/config")
@@ -44,11 +41,9 @@ public class DeviceApiController {
 
     @GetMapping("{uuid}/measurements")
     public List<GetMeasurementDto> getAllMeasurements(@PathVariable UUID uuid, @RequestParam @DateTimeFormat(pattern = "dd.MM.yyyy") Date since) {
-        final Device device = devices.getByUuidOrThrow(uuid);
-        return device.getMeasurements()
+        return devices.getMeasurementsByUuidSince(uuid, since)
                 .stream()
                 .map(it -> mapper.map(it, GetMeasurementDto.class))
-                .filter(it -> it.getCreateDate().after(since))
                 .collect(Collectors.toList());
     }
 
@@ -74,7 +69,7 @@ public class DeviceApiController {
         final Device device = devices.getByUuidOrThrow(uuid);
         if (devicePatch.getName() != null)
             device.setName(devicePatch.getName());
-        if(devicePatch.getActivated() != null)
+        if (devicePatch.getActivated() != null)
             device.setActivated(devicePatch.getActivated());
         devices.updateDeviceOrThrow(device);
         return mapper.map(device, DevicePatchDto.class);

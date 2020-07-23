@@ -3,9 +3,13 @@ package hm.edu.smartgardening.service;
 import hm.edu.smartgardening.exceptions.ResourceNotFoundException;
 import hm.edu.smartgardening.model.Config;
 import hm.edu.smartgardening.model.Device;
+import hm.edu.smartgardening.model.Measurement;
 import hm.edu.smartgardening.repository.DeviceRepository;
+import hm.edu.smartgardening.repository.MeasurementRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -13,9 +17,11 @@ import java.util.stream.Stream;
 public class DeviceServiceImpl implements DeviceService {
 
     private final DeviceRepository deviceRepository;
+    private final MeasurementRepository measurementRepository;
 
-    public DeviceServiceImpl(DeviceRepository deviceRepository) {
+    public DeviceServiceImpl(DeviceRepository deviceRepository, MeasurementRepository measurementRepository) {
         this.deviceRepository = deviceRepository;
+        this.measurementRepository = measurementRepository;
     }
 
     @Override
@@ -55,5 +61,11 @@ public class DeviceServiceImpl implements DeviceService {
         else
             throw new ResourceNotFoundException();
         return device;
+    }
+
+    @Override
+    public List<Measurement> getMeasurementsByUuidSince(UUID uuid, Date since) {
+        return since == null ? this.getByUuidOrThrow(uuid).getMeasurements() :
+                measurementRepository.getMeasurementsByUuidSince(uuid, since);
     }
 }

@@ -44,6 +44,7 @@ public class Device {
     private Status status = new Status();
 
     @OneToMany(
+            mappedBy = "device",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )

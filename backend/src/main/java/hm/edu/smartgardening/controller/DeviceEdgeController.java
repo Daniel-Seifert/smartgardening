@@ -1,43 +1,33 @@
 package hm.edu.smartgardening.controller;
 
 import hm.edu.smartgardening.controller.dto.*;
-import hm.edu.smartgardening.exceptions.ResourceNotFoundException;
-import hm.edu.smartgardening.model.*;
-import hm.edu.smartgardening.repository.WeatherRepository;
+import hm.edu.smartgardening.exceptions.UnauthorizedException;
+import hm.edu.smartgardening.model.Device;
+import hm.edu.smartgardening.model.Measurement;
+import hm.edu.smartgardening.model.Status;
 import hm.edu.smartgardening.service.DeviceService;
-import org.apache.commons.lang3.time.DateUtils;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import static hm.edu.smartgardening.controller.WeatherController.RELEVANT_RAINFALL;
-
+import java.util.Date;
+import java.util.UUID;
 
 @RestController
 @CrossOrigin
 @RequestMapping("/edge/devices")
 public class DeviceEdgeController {
 
+    /** The amount of liters per square meter */
+    public static final float RELEVANT_RAINFALL = 1.5f;
+
     private final DeviceService devices;
     private final ModelMapper mapper;
-    private final WeatherRepository weatherRepository;
-    private final RestTemplate rest;
+    private final WeatherController weatherController;
 
-    @Value("${app.config.country-code}")
-    private String countryCode;
-    @Value("${app.config.api-key}")
-    private String apiKey;
-
-    public DeviceEdgeController(WeatherRepository repo, DeviceService devices, ModelMapper mapper, RestTemplate template) {
-        this.weatherRepository = repo;
+    public DeviceEdgeController(DeviceService devices, ModelMapper mapper, WeatherController weatherController) {
         this.devices = devices;
         this.mapper = mapper;
-        this.rest = template;
+        this.weatherController = weatherController;
     }
 
     @PostMapping("register")
@@ -57,45 +47,26 @@ public class DeviceEdgeController {
     @GetMapping("{uuid}/weather")
     public RainDto rainToday(@PathVariable UUID uuid) {
         final Device device = devices.getByUuidOrThrow(uuid);
-        final String zipCode = device.getConfig().getZipCode();
-        final Date today = new Date();
-        final WeatherId searchId = new WeatherId(zipCode, today);
-        final Optional<Weather> match = weatherRepository.findById(searchId);
-        if (match.isPresent()) {
-            return mapper.map(match.get().getRain() > RELEVANT_RAINFALL, RainDto.class);
-        } else {
-            DailyForecastResponseDto response = rest
-                    .getForObject("http://api.openweathermap.org/data/2.5/forecast?zip={zipCode},{countryCode}&appid={apiKey}",
-                            DailyForecastResponseDto.class,
-                            zipCode,
-                            countryCode,
-                            apiKey
-                    );
-
-            if (response != null && response.getList() != null) {
-                final Map<Date, List<Weather>> weatherByDay = response.getList().stream()
-                        .map(next -> next.toWeather(zipCode))
-                        .filter(forecast -> !weatherRepository.existsById(forecast.getId()))
-                        .collect(Collectors.groupingBy(weather -> DateUtils.truncate(weather.getId().getDay(), Calendar.DAY_OF_MONTH)));
-
-                weatherByDay.forEach((key, value) -> {
-                    final AtomicInteger counter = new AtomicInteger(1);
-                    final Optional<Weather> combined = value.stream().reduce((a, b) -> {
-                        counter.incrementAndGet();
-                        a.getId().setDay(key);
-                        return a.add(b);
-                    });
-                    combined.ifPresent(weather -> weatherRepository.save(weather.calcAverage(counter.get())));
-                });
-            }
+        if (!device.getConfig().isOutdoor()) {
+            RainDto dto = new RainDto();
+            dto.setRain(false);
+            return dto;
         }
-        return mapper.map(weatherRepository.findById(searchId).orElseThrow(ResourceNotFoundException::new).getRain() > RELEVANT_RAINFALL, RainDto.class);
+
+        final String zipCode = device.getConfig().getZipCode();
+        final WeatherOutDto currWeather = weatherController.getWeather(zipCode, new Date());
+        return mapper.map(currWeather.getRain() > RELEVANT_RAINFALL, RainDto.class);
     }
 
     @PostMapping("{uuid}/measures")
     public AddMeasurementDto addMeasurement(@PathVariable UUID uuid, @RequestBody AddMeasurementDto measurement) {
         final Device device = devices.getByUuidOrThrow(uuid);
+        if (!device.isActivated()) {
+            throw new UnauthorizedException();
+        }
+
         final Measurement newMeasurement = mapper.map(measurement, Measurement.class);
+        newMeasurement.setDevice(device);
         device.addMeasurement(newMeasurement);
         device.getStatus().setHumidity(newMeasurement.getValue());
         devices.updateDeviceOrThrow(device);
@@ -105,6 +76,9 @@ public class DeviceEdgeController {
     @PutMapping("{uuid}/status")
     public StatusBriefDto updateDeviceStatus(@PathVariable UUID uuid, @RequestBody StatusBriefDto updateStatus) {
         final Device device = devices.getByUuidOrThrow(uuid);
+        if (!device.isActivated()) {
+            throw new UnauthorizedException();
+        }
 
         final Status newStatus = mapper.map(updateStatus, Status.class);
         newStatus.setHumidity(device.getStatus().getHumidity());

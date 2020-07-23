@@ -1,12 +1,14 @@
 import { Config } from "./Config";
 import { Measurement } from "./Measurement";
+import { Status } from "./Status";
 
 export interface Device {
   id: string;
   name: string;
   activated: boolean;
-  createDate: Date,
-  updateDate: Date,
+  createDate: Date;
+  updateDate: Date;
   config?: Config;
-  measurement?: Measurement[]; 
+  status?: Status;
+  measurements?: Measurement[];
 }

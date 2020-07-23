@@ -19,12 +19,9 @@ import java.util.stream.Collectors;
 
 
 @RestController
-@CrossOrigin
 @RequestMapping("/edge/weather")
 public class WeatherController {
 
-    /** The amount of liters per square meter */
-    public static final float RELEVANT_RAINFALL = 1.5f;
     private final WeatherRepository repo;
     private final ModelMapper mapper;
     private final RestTemplate rest;
@@ -41,7 +38,7 @@ public class WeatherController {
     }
 
     @GetMapping("{zipCode}")
-    public WeatherOutDto getDeviceConfig(@PathVariable String zipCode, @RequestParam @DateTimeFormat(pattern = "dd.MM.yyyy") Date day) {
+    public WeatherOutDto getWeather(@PathVariable String zipCode, @RequestParam @DateTimeFormat(pattern = "dd.MM.yyyy") Date day) {
         final WeatherId searchId = new WeatherId(zipCode, day);
         final Optional<Weather> match = repo.findById(searchId);
         if (match.isPresent()) {
