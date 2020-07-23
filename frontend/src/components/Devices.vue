@@ -64,7 +64,7 @@
                   <v-list-item-content>
                     <v-list-item-title>Feuchtigkeit</v-list-item-title>
                     <v-list-item-subtitle>{{
-                      stats.humidity
+                      deviceStatus(device.id).humidity
                     }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -72,7 +72,7 @@
                   <v-list-item-content v-if="device.activated">
                     <v-list-item-title>Letzte Bewässerung</v-list-item-title>
                     <v-list-item-subtitle>{{
-                      stats.lastWatering
+                      deviceStatus(device.id).lastWatering
                     }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -116,6 +116,7 @@ export default Vue.extend({
     LineChart,
   },
   data: () => ({
+    deletePressCount: 0,
     selectedIndex: -1,
     stats: {
       humidity: "57%",
@@ -147,17 +148,18 @@ export default Vue.extend({
       devices: "allDevices",
       activatedDevices: "activatedDevices",
     }),
-    ...mapGetters(["measurementDataCollection"]),
+    ...mapGetters(["measurementDataCollection", "deviceStatus"]),
   },
   watch: {
     selectedIndex: function() {
-      if (this.selectedIndex !== undefined) {
+      if (this.selectedIndex !== undefined && this.selectedIndex !== -1) {
         this.loadMeasurements(this.devices[this.selectedIndex].id);
+        this.loadStatus(this.devices[this.selectedIndex].id);
       }
     },
   },
   methods: {
-    ...mapActions(["loadMeasurements"]),
+    ...mapActions(["loadMeasurements", "loadStatus"]),
     openSetting(uuid: string) {
       this.$store.dispatch("loadDeviceConfig", uuid);
       this.$router.push(`devices/${uuid}/settings`);
@@ -166,10 +168,16 @@ export default Vue.extend({
     activateDevices(uuid: string) {
       this.$store.dispatch("activateDevice", uuid);
     },
-
     deleteDevice(uuid: string) {
-      this.$store.dispatch("deleteDevice", uuid);
-      this.selectedIndex = -1;
+      this.deletePressCount += 1;
+      setTimeout(() => {
+        this.deletePressCount = 0;
+      }, 5000);
+      if (this.deletePressCount > 10) {
+        this.$store.dispatch("deleteDevice", uuid);
+        this.selectedIndex = -1;
+        this.deletePressCount == 0;
+      }
     },
   },
 });
