@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/edge/weather")
 public class WeatherController {
 
+    /** The amount of liters per square meter */
+    public static final float RELEVANT_RAINFALL = 1.5f;
     private final WeatherRepository repo;
     private final ModelMapper mapper;
     private final RestTemplate rest;
