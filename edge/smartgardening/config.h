@@ -11,9 +11,10 @@
    EEPROM structure
    | UUID (36 bytes) [0-35]| Humid min (2 bytes) [36-37]| Humidity max (2 bytes) [38-39] |
    | wateringSec min (2 bytes) [40-41]| wateringSec max (2 bytes) [42-43]| active (1 byte) [44] |
-   | SSID (32 bytes) [45-76] | SSID-Password (64 bytes) [77-140] |
+   | SSID (32 bytes) [45-76] | SSID-Password (64 bytes) [77-140] | Outdoor (1 byte) [141] |
 */
 
+// Offsets
 const int uuid_offset = 0;
 const int humid_min_offset = 36;
 const int humid_max_offset = 38;
@@ -22,38 +23,18 @@ const int water_max_offset = 42;
 const int active_offset = 44;
 const int ssid_offset = 45;
 const int ssid_pw_offset = 77;
+const int outdoor_offset = 141;
+
+// Field lengths
 const int uuid_bytes = 36;
 const int ssid_bytes = 32;
 const int ssid_pw_bytes = 64;
 
-// defaults
+// Defaults
 int min_humidity_default = 30;
 int max_humidity_default = 70;
 int min_watering_sec_default = 5;
 int max_watering_sec_default = 10;
-
-#ifdef __arm__
-// should use uinstd.h to define sbrk but Due causes a conflict
-extern "C" char* sbrk(int incr);
-#else  // __ARM__
-extern char *__brkval;
-#endif  // __arm__
-
-int freeMemory() {
-  char top;
-#ifdef __arm__
-  return &top - reinterpret_cast<char*>(sbrk(0));
-#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-  return &top - __brkval;
-#else  // __arm__
-  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-#endif  // __arm__
-}
-
-void printMemory() {
-  Serial.print("Free Memory: ");
-  Serial.println(freeMemory());
-}
 
 /*
    ##############################################
@@ -73,7 +54,6 @@ void writeNulled(const char * value, int offset, int length) {
 
 char * readString(int offset, int length) {
   char * result = (char *)malloc(sizeof(char) * length + 1);
-  printMemory();
   if (result == NULL) {
     Serial.println("Error malloc");
   }
@@ -162,6 +142,10 @@ bool isActive() {
   return readBool(active_offset);
 }
 
+bool isOutdoor() {
+  return readBool(outdoor_offset);
+}
+
 char* getUuid () {
   return readString(uuid_offset, uuid_bytes);
 }
@@ -236,6 +220,10 @@ void storeMaxWateringSec (int max_watering) {
 
 void storeActive(bool value) {
   writeBool(active_offset, value);
+}
+
+void storeOutdoor(bool value) {
+  writeBool(outdoor_offset, value);
 }
 
 bool storeWifiData(char* ssid, char* password) {

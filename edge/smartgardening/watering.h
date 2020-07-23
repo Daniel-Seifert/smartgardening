@@ -3,13 +3,21 @@
 
 #define MoisturePin A0
 #define RelayPin 8
-#define MoistureSendInterval 10L*1000L // 1 minute in millis
+#define MoistureSendInterval 10L*60L*1000L // 10 m
+#define WeatherRequestInterval 60L*60L*3L*1000L // 3 hours
+#define MinWateringInterval 60L*1000L // 1m
+#define ConfPullInterval 1L*60L*60L*1000L // 1 h
 
+#include "api.h"
 #include "config.h"
 
 unsigned long lastSent = millis();
 unsigned long lastSwitch = millis();
+unsigned long lastWeather = 0;
+unsigned long lastConfPull = 0;
+
 bool pumping = false;
+bool raining = false;
 
 int readMoisture() {
   int moisture_value = analogRead(MoisturePin);
@@ -35,6 +43,17 @@ void sendMoisture(int moisture) {
   Serial.print("Sending Moisture: ");
   Serial.print(moisture);
   Serial.println("%");
+  apiPostMeasurement(moisture);
+}
+
+void pullConfig() {
+  Serial.println("Pull config");
+  apiGetConfig();
+}
+
+void requestWeather() {
+  Serial.println("Request weather ");
+  raining = apiIsRaining();
 }
 
 void wateringLoop() {
@@ -44,6 +63,19 @@ void wateringLoop() {
   // Read moisture
   int moisture = readMoisture();
 
+  // Read configs
+  if (lastConfPull == 0 || (now - lastConfPull) > ConfPullInterval) {
+    pullConfig();
+    lastConfPull = now;
+  }
+  bool outdoor = isOutdoor();
+
+  // Request weather
+  if (lastWeather == 0 || (now - lastWeather) > WeatherRequestInterval) {
+    requestWeather();
+    lastWeather = now;
+  }
+
   // Send moisture
   if ((now - lastSent) > MoistureSendInterval) {
     lastSent = now;
@@ -51,22 +83,25 @@ void wateringLoop() {
   }
 
   // Turn pump ON
-  if (!pumping && moisture < getMinHumidity()) {
+  if (!pumping && (now - lastSwitch) > MinWateringInterval && moisture < getMinHumidity() && !(outdoor && raining)) {
     switchRelay(true);
     lastSwitch = now;
     pumping = true;
+    apiSetPumping(true);
+  }
+
+  // Show run time
+  unsigned long runTime = now - lastSwitch;
+  if (pumping) {
+    Serial.print("Runtime sec: ");
+    Serial.println(runTime/1000);
   }
 
   // Turn pump OFF
-  unsigned long runTime = now - lastSwitch;
-  if (pumping) {
-    Serial.print("Runtime millis: ");
-    Serial.println(runTime);
-  }
-
   if (pumping && runTime > getMinWateringSec() * 1000 && (moisture > getMaxHumidity() || runTime > getMaxWateringSec() * 1000)) {
     switchRelay(false);
     pumping = false;
+    apiSetPumping(false);
   }
 }
 

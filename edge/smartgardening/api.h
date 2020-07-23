@@ -162,10 +162,11 @@ void apiGetConfig() {
   storeMinWateringSec(doc["minWateringSeconds"]);
   storeMaxWateringSec(doc["maxWateringSeconds"]);
   storeActive(doc["activated"]);
+  storeOutdoor(doc["outdoor"]);
   free(response);
 }
 
-bool isRaining() {
+bool apiIsRaining() {
   char * endpoint = mallocString(sizeof(char) * (strlen("/edge/devices/") + strlen("/weather") + uuid_bytes + 1));
   char * uuid = getUuid();
   sprintf(endpoint, "/edge/devices/%s/weather", uuid);

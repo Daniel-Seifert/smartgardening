@@ -4,15 +4,18 @@
 #include "config.h"
 #include "api.h"
 #include "watering.h"
+#include "mem.h"
 
 bool ssid_set = false;
 bool wifi_connected = false;
 
-void setup() {
+void setup()
+{
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
 
-  while (!Serial) {
+  while (!Serial)
+  {
     ; // wait for serial port to connect. Needed for native USB port only
   }
 
@@ -21,21 +24,28 @@ void setup() {
   //storeUuid("");
   printConfig();
 
-  char* ssid = getSsid();
-  char* password = getSsidPw();
+  char *ssid = getSsid();
+  char *password = getSsidPw();
   ssid_set = strlen(ssid) > 0 && strlen(password) > 0;
-  if (!ssid_set) {
+  if (!ssid_set)
+  {
     // Setup access point
-    while (!apSetup()) {}
+    while (!apSetup())
+    {
+    }
     // Host access point
-    while (!apRun()) {}
+    while (!apRun())
+    {
+    }
     free(ssid);
     free(password);
 
     // Write back ssid and password from user input
     ssid = getSsid();
     password = getSsidPw();
-  } else {
+  }
+  else
+  {
     Serial.print("Loaded config for access point: ");
     Serial.print(ssid);
     Serial.print(" with password length: ");
@@ -43,16 +53,17 @@ void setup() {
   }
 
   wifi_connected = connectWifi(ssid, password, 5);
-  if (!wifi_connected) {
+  if (!wifi_connected)
+  {
     Serial.println("Unable to connect to wifi!");
   }
   Serial.println("Finished setup");
   free(ssid);
   free(password);
 }
-int counterValue = 0;
 
-void loop() {
+void loop()
+{
   if (!wifi_connected) {
     Serial.println("Unable to connect to WIFI in main loop!");
   }
@@ -69,21 +80,12 @@ void loop() {
     Serial.println(uuid);
     free(uuid);
     apiRegister();
-  }else {
+  }
+  else {
     free(uuid);
   }
 
-  //wateringLoop();
-//  apiPostMeasurement(counterValue++);
-  if (counterValue%2 == 0) {
-    apiSetPumping(true);
-    
-  }
-  else {
-    apiSetPumping(false);
-  }
-  counterValue++;
-  printConfig();
-  
-  delay(5000);
+  wateringLoop();
+  printMemory();
+  delay(1000);
 }
