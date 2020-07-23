@@ -21,10 +21,8 @@ void setup() {
   //storeUuid("");
   printConfig();
 
-  char* ssid;
-  getSsid(&ssid);
-  char* password;
-  getSsidPw(&password);
+  char* ssid = getSsid();
+  char* password = getSsidPw();
   ssid_set = strlen(ssid) > 0 && strlen(password) > 0;
   if (!ssid_set) {
     // Setup access point
@@ -70,8 +68,8 @@ void loop() {
     Serial.println(uuid);
     free(uuid);
     apiRegister();
-//    storeUuid("Unique");
-  }else {
+    storeUuid("Unique");
+  } else {
     free(uuid);
   }
 
