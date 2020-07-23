@@ -17,7 +17,7 @@ void setup() {
   }
 
   Serial.println("Starting setup...");
-  clearEEPROM();
+  //clearEEPROM();
   //storeUuid("");
   printConfig();
 
@@ -68,12 +68,7 @@ void loop() {
     Serial.println(uuid);
     free(uuid);
     apiRegister();
-<<<<<<< Updated upstream
-    storeUuid("Unique");
-  } else {
-=======
   }else {
->>>>>>> Stashed changes
     free(uuid);
   }
 

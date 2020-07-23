@@ -50,7 +50,7 @@ int freeMemory() {
 #endif  // __arm__
 }
 
-void printMemorys() {
+void printMemory() {
   Serial.print("Free Memory: ");
   Serial.println(freeMemory());
 }
@@ -61,11 +61,7 @@ void printMemorys() {
    ##############################################
 */
 
-<<<<<<< Updated upstream
-void writeNulled(char* value, int offset, int length) {
-=======
 void writeNulled(const char * value, int offset, int length) {
->>>>>>> Stashed changes
   for (int i = 0; i < length; i++) {
     if (i < strlen(value)) {
       EEPROM.write(offset + i, value[i]);
@@ -77,7 +73,7 @@ void writeNulled(const char * value, int offset, int length) {
 
 char * readString(int offset, int length) {
   char * result = (char *)malloc(sizeof(char) * length + 1);
-  printMemorys();
+  printMemory();
   if (result == NULL) {
     Serial.println("Error malloc");
   }

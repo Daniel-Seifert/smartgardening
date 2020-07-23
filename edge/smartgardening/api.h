@@ -96,13 +96,12 @@ void apiRegister() {
   char * response = httpPost("/edge/devices/register", "");
   StaticJsonDocument<300> doc;
   deserializeJson(doc, response);
+  Serial.print("Setting uuid: ");
   serializeJsonPretty(doc["id"], Serial);
+  Serial.println();
   const char * data = doc["id"];
   storeUuid(data);
   free(response);
-  char * uuid = getUuid();
-  Serial.println(uuid);
-  free(uuid);
 }
 
 #endif
