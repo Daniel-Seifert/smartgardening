@@ -4,8 +4,8 @@
 #include "config.h"
 #include "stringMethods.h"
 
-char ssid[] = "test_wifi";        // your network SSID (name)
-char pass[] = "password";        // your network password (use for WPA, or use as key for WEP)
+char ssid[] = "SmartGardening";        // your network SSID (name)
+char pass[] = "SmartGardening";        // your network password (use for WPA, or use as key for WEP)
 WiFiServer web_server(80);
 int web_status = WL_IDLE_STATUS;
 
@@ -60,30 +60,33 @@ int apRun() {
   String new_password = "";
   bool setSSID = false;
   bool setPassword = false;
-  if (client) {                             // if you get a client,
-    Serial.println("new client");           // print a message out the serial port
-    String currentLine = "";                // make a String to hold incoming data from the client
-    while (client.connected()) {            // loop while the client's connected
-      if (client.available()) {             // if there's bytes to read from the client,
-        char c = client.read();             // read a byte, then
-        // Serial.write(c);                    // print it out the serial monitor
-        if (c == '\n') {                    // if the byte is a newline character
-
+  bool isPost = false;
+  int newLineCount = 0;
+  if (client) {
+    Serial.println("new client");
+    String currentLine = "";
+    int c = 0;
+    if (client.connected()) {
+      
+      while ((c = client.read()) != -1) {
+        
+        Serial.print((char)c);
+        if (c == '\n' && !isPost) {
           // if the current line is blank, you got two newline characters in a row.
           // that's the end of the client HTTP request, so send a response:
           if (currentLine.length() == 0) {
             // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
             // and a content-type so the client knows what's coming, then a blank line:
             client.println("HTTP/1.1 200 OK");
-            client.println("Content-type:text/html; charset=us-ascii");
+            client.println("Content-type:text/html; charset=ISO-8859-1");
             client.println();
 
             // the content of the HTTP response follows the header:
-            client.print("<form action=\"/action_page\">");
+            client.print("<form action=\"/\" method=\"post\" accept-charset=\"ISO-8859-1\" enctype=\"text/plain\">");
             client.print("<label for=\"ssid\">SSID:</label><br>");
-            client.print("<input type=\"text\" id=\"ssid\" name=\"ssid\"><br>");
+            client.print("<input type=\"text\" id=\"ssid\" name=\"ssid\" required><br>");
             client.print("<label for=\"password\">Password</label><br>");
-            client.print("<input type=\"password\" id=\"password\" name=\"password\"><br><br>");
+            client.print("<input type=\"password\" id=\"password\" name=\"password\" required><br><br>");
             client.print("<input type=\"submit\" value=\"Submit\">");
             client.print("</form>");
 
@@ -97,25 +100,27 @@ int apRun() {
           }
         }
         else if (c != '\r') {    // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
+          currentLine += (char)c;      // add it to the end of the currentLine
         }
 
-        if (c == '&') {
+        if (c == '\n') {
           setSSID = false;
         }
+//
+//        if (c == ' ' && setPassword == true) {
+//          setPassword = false;
+//        }
 
-        if (c == ' ' && setPassword == true) {
-          setPassword = false;
+        if (setSSID == true && c != '\n' && c != '\r') {
+          new_ssid += (char)c;
         }
 
-        if (setSSID == true) {
-          new_ssid += c;
+        if (setPassword == true && c != '\n' && c != '\r') {
+          new_password += (char)c;
         }
-
-        if (setPassword == true) {
-          new_password += c;
+        if (currentLine.endsWith("POST")) {
+          isPost = true;
         }
-
         if (currentLine.endsWith("ssid=")) {
           setSSID = true;
         }
@@ -124,6 +129,8 @@ int apRun() {
         }
       }
     }
+    currentLine = "";
+    while (client.read() != -1) {}
     // close the connection:
     client.stop();
     Serial.println("client disconnected");
@@ -134,7 +141,9 @@ int apRun() {
     strcpy (passToStore, new_password.c_str());
 
     bool stored = storeWifiData(ssidToStore, passToStore);
-
+    Serial.println(strlen(ssidToStore));
+    Serial.println(strlen(passToStore));
+    
     free(ssidToStore);
     free(passToStore);
     return stored;

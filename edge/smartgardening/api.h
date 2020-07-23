@@ -5,14 +5,19 @@
 #include <ArduinoJson.h>
 #include <string.h>
 #include "stringMethods.h"
+#include "mem.h"
+
+#define WifiReconnectInterval (60L*1000L) // 1m
 
 const int bufferSize = 300;
+unsigned long lastConnectionTry = 0;
 
 WiFiSSLClient api_client;
 char api_server[] = "smart-gardening.herokuapp.com";
 
 bool connectWifi(char* ssid, char* password, int retries) {
   int count = 0;
+  
 
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
@@ -20,25 +25,34 @@ bool connectWifi(char* ssid, char* password, int retries) {
     return false;
   }
 
-  while (WiFi.status() != WL_CONNECTED && count <= retries) {
-    Serial.print("Attempt to connect to SSID: ");
+  while (WiFi.status() != WL_CONNECTED && count < retries) {
+    Serial.print("Attempt ");
+    Serial.print(count);
+    Serial.print(" to connect to SSID: ");
     Serial.println(ssid);
     WiFi.begin(ssid, password);
+    count++;
   }
   return WiFi.status() == WL_CONNECTED;
 }
 
 void apiConnect() {
   if (!api_client.connected()) {
+    api_client.stop();
     Serial.println("Connecting client");
     api_client.connect(api_server, 443);
   }
 }
 
 void httpRequest(const char * TYPE, const char * endpoint, const  char * body) {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Wifi is down");
+    return;
+  }
+  
   apiConnect();
   char * sendMessage = (char *)malloc(sizeof(char) * (strlen(TYPE) + strlen(endpoint) + strlen(F(" HTTP/1.1")) + 1));
-  sprintf(sendMessage, "%s %s HTTP/1.1",TYPE, endpoint);
+  sprintf(sendMessage, "%s %s HTTP/1.1", TYPE, endpoint);
   Serial.print(F("Sending Message to enpoint: "));
   Serial.println(sendMessage);
 
@@ -56,14 +70,14 @@ void httpRequest(const char * TYPE, const char * endpoint, const  char * body) {
   api_client.println(body);
   // Free stuff
   free(sendMessage);
-  delay(500);
+  delay(1000);
 }
 
 void httpGet(char * endpoint) {
   httpRequest("GET", endpoint, "");
 }
 
-void httpPut(const char * endpoint, const char * body){
+void httpPut(const char * endpoint, const char * body) {
   httpRequest("PUT", endpoint, body);
 }
 
@@ -72,6 +86,11 @@ void httpPost(const char * endpoint, const char * body) {
 }
 
 char * readClient() {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Wifi is down");
+    return NULL;
+  }
+  
   char *word = NULL;
   int wordlength = 0;
   getWord(&api_client, &word, &wordlength);
@@ -81,15 +100,18 @@ char * readClient() {
 void apiRegister() {
   httpPost("/edge/devices/register", "");
   char * response = readClient();
-  
-  StaticJsonDocument<bufferSize> doc;
-  deserializeJson(doc, response);
-  Serial.print("Setting uuid: ");
-  serializeJsonPretty(doc["id"], Serial);
-  Serial.println();
-  const char * data = doc["id"];
-  storeUuid(data);
-  free(response);
+
+  if (response) {
+    StaticJsonDocument<bufferSize> doc;
+    deserializeJson(doc, response);
+
+    Serial.print("Setting uuid: ");
+    serializeJsonPretty(doc["id"], Serial);
+    Serial.println();
+    const char * data = doc["id"];
+    storeUuid(data);
+    free(response);
+  }
 }
 
 void apiPostMeasurement(int value) {
@@ -101,13 +123,13 @@ void apiPostMeasurement(int value) {
   doc["value"] = value;
   doc["measureType"] = "MOISTURE";
   serializeJson(doc, body, bufferSize);
-  
+
   Serial.print("apiPostMeasurement sending body: ");
   Serial.println(body);
   httpPost(endpoint, body);
   free(body);
   free(uuid);
-  free(endpoint);  
+  free(endpoint);
 
   char * response = readClient();
   deserializeJson(doc, response);
@@ -124,7 +146,7 @@ void apiSetPumping(bool isPumping) {
   sprintf(endpoint, "/edge/devices/%s/status", uuid);
   StaticJsonDocument<bufferSize> doc;
   doc["pumping"] = isPumping;
-  
+
   serializeJson(doc, body, bufferSize);
 
   Serial.print("apiPutPumping sending body: ");
@@ -151,18 +173,31 @@ void apiGetConfig() {
   free(uuid);
 
   char * response = readClient();
-  StaticJsonDocument<bufferSize> doc;
-  deserializeJson(doc, response);
-  Serial.print("Got config: ");
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
 
-  storeMinHumidity(doc["minHumidity"]);
-  storeMaxHumidity(doc["maxHumidity"]);
-  storeMinWateringSec(doc["minWateringSeconds"]);
-  storeMaxWateringSec(doc["maxWateringSeconds"]);
-  storeActive(doc["activated"]);
-  storeOutdoor(doc["outdoor"]);
+  if (response) {
+    StaticJsonDocument<bufferSize> doc;
+    deserializeJson(doc, response);
+    Serial.print("Got config: ");
+    serializeJsonPretty(doc, Serial);
+    Serial.println();
+
+    if (doc.containsKey("status")) {
+      int status = doc["status"];
+      if (status == 404) {
+        Serial.println("Device not found reseting");
+        clearEEPROM();
+        resetFunc();
+      }
+    }
+
+    storeMinHumidity(doc["minHumidity"]);
+    storeMaxHumidity(doc["maxHumidity"]);
+    storeMinWateringSec(doc["minWateringSeconds"]);
+    storeMaxWateringSec(doc["maxWateringSeconds"]);
+    storeActive(doc["activated"]);
+    storeOutdoor(doc["outdoor"]);
+  }
+
   free(response);
 }
 
@@ -175,14 +210,17 @@ bool apiIsRaining() {
   free(uuid);
 
   char * response = readClient();
-  StaticJsonDocument<bufferSize> doc;
-  deserializeJson(doc, response);
-  Serial.print("Got WeatherData: ");
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-  bool rain = doc["rain"];
-  free(response);
+  bool rain = false;
+  if (response) {
+    StaticJsonDocument<bufferSize> doc;
+    deserializeJson(doc, response);
+    Serial.print("Got WeatherData: ");
+    serializeJsonPretty(doc, Serial);
+    Serial.println();
+    rain = doc["rain"];
+    free(response);
+  }
+
   return rain;
 }
-
 #endif

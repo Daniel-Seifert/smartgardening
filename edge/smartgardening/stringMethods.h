@@ -1,9 +1,7 @@
 #ifndef STRING_METHODS_H
 #define STRING_METHODS_H
 
-
 #include <string.h>
-
 
 typedef char Byte;
 

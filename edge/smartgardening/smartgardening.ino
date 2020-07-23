@@ -6,6 +6,10 @@
 #include "watering.h"
 #include "mem.h"
 
+#define N0DEBUG
+
+const int resetThreshold = 3;
+
 bool ssid_set = false;
 bool wifi_connected = false;
 
@@ -13,15 +17,13 @@ void setup()
 {
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
-
   while (!Serial)
   {
     ; // wait for serial port to connect. Needed for native USB port only
   }
 
-  Serial.println("Starting setup...");
   //clearEEPROM();
-  //storeUuid("");
+  Serial.println("Starting setup...");
   printConfig();
 
   char *ssid = getSsid();
@@ -52,11 +54,27 @@ void setup()
     Serial.println(strlen(password));
   }
 
+  Serial.println("Connecting to Wifi");
   wifi_connected = connectWifi(ssid, password, 5);
   if (!wifi_connected)
   {
+    int reset = getReset();
+    reset++;
+    if (reset >= resetThreshold) {
+      Serial.println("Reset Arduino. Clearing EEPROM");
+      clearEEPROM();
+      Serial.println("Restarting");
+      resetFunc();
+    }
+    storeReset(reset);
     Serial.println("Unable to connect to wifi!");
+    Serial.print("Reset counter is now: ");
+    Serial.println(reset);
+    Serial.print("Arduino does a config reset when reset counter reaches: ");
+    Serial.println(resetThreshold);
   }
+
+
   setupPins();
   Serial.println("Finished setup");
   free(ssid);
@@ -65,18 +83,17 @@ void setup()
 
 void loop()
 {
-  if (!wifi_connected) {
-    Serial.println("Unable to connect to WIFI in main loop!");
-  }
-
-  char *uuid = getUuid();
   char *ssid = getSsid();
   char *password = getSsidPw();
 
-  wifi_connected = connectWifi(ssid, password, 5);
+  unsigned long now = millis();
+  if ((now - lastConnectionTry) > WifiReconnectInterval) {
+    lastConnectionTry = now;
+    wifi_connected = connectWifi(ssid, password, 3);
+  }
   free(password);
   free(ssid);
-
+  char *uuid = getUuid();
   if (strlen(uuid) == 0) {
     Serial.println(uuid);
     free(uuid);
@@ -86,6 +103,10 @@ void loop()
     free(uuid);
   }
 
+#ifndef N0DEBUG
+  printMemory();
+#endif
   wateringLoop();
+
   delay(1000);
 }

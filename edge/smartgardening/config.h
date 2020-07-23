@@ -11,7 +11,8 @@
    EEPROM structure
    | UUID (36 bytes) [0-35]| Humid min (2 bytes) [36-37]| Humidity max (2 bytes) [38-39] |
    | wateringSec min (2 bytes) [40-41]| wateringSec max (2 bytes) [42-43]| active (1 byte) [44] |
-   | SSID (32 bytes) [45-76] | SSID-Password (64 bytes) [77-140] | Outdoor (1 byte) [141] |
+   | SSID (32 bytes) [45-76] | SSID-Password (64 bytes) [77-140] | Outdoor (1 byte) [141] | 
+   | reset (2 byte) [142-143
 */
 
 // Offsets
@@ -24,6 +25,7 @@ const int active_offset = 44;
 const int ssid_offset = 45;
 const int ssid_pw_offset = 77;
 const int outdoor_offset = 141;
+const int reset_offset = 142;
 
 // Field lengths
 const int uuid_bytes = 36;
@@ -138,6 +140,10 @@ int getMaxWateringSec () {
   return value;
 }
 
+int getReset() {
+  return readInt(reset_offset);
+}
+
 bool isActive() {
   return readBool(active_offset);
 }
@@ -156,6 +162,59 @@ char* getSsid () {
 
 char* getSsidPw () {
   return readString(ssid_pw_offset, ssid_pw_bytes);
+}
+
+/*
+   ##############################################
+   SETTER
+   ##############################################
+*/
+
+void storeUuid (const char * uuid) {
+  writeNulled(uuid, uuid_offset, uuid_bytes);
+}
+
+void storeMinHumidity (int min_humidity) {
+  writeInt(humid_min_offset, min_humidity);
+}
+
+void storeMaxHumidity (int max_humidity) {
+  writeInt(humid_max_offset, max_humidity);
+}
+
+void storeMinWateringSec (int min_watering) {
+  writeInt(water_min_offset, min_watering);
+}
+
+void storeMaxWateringSec (int max_watering) {
+  writeInt(water_max_offset, max_watering);
+}
+
+void storeReset(int reset) {
+  writeInt(reset_offset, reset);
+}
+
+void storeActive(bool value) {
+  writeBool(active_offset, value);
+}
+
+void storeOutdoor(bool value) {
+  writeBool(outdoor_offset, value);
+}
+
+bool storeWifiData(const char* ssid, const char* password) {
+  if (strlen(ssid) == 0 || strlen(password) == 0) {
+    return false;
+  }
+
+  writeNulled(ssid, ssid_offset, ssid_bytes);
+  writeNulled(password, ssid_pw_offset, ssid_pw_bytes);
+
+  Serial.print("Stored SSID: ");
+  Serial.print(ssid);
+  Serial.print(" with password length: ");
+  Serial.println(strlen(password));
+  return true;
 }
 
 /*
@@ -191,54 +250,4 @@ void printConfig() {
 
   free(uuid);
 }
-
-/*
-   ##############################################
-   SETTER
-   ##############################################
-*/
-
-void storeUuid (const char * uuid) {
-  writeNulled(uuid, uuid_offset, uuid_bytes);
-}
-
-void storeMinHumidity (int min_humidity) {
-  writeInt(humid_min_offset, min_humidity);
-}
-
-void storeMaxHumidity (int max_humidity) {
-  writeInt(humid_max_offset, max_humidity);
-}
-
-void storeMinWateringSec (int min_watering) {
-  writeInt(water_min_offset, min_watering);
-}
-
-void storeMaxWateringSec (int max_watering) {
-  writeInt(water_max_offset, max_watering);
-}
-
-void storeActive(bool value) {
-  writeBool(active_offset, value);
-}
-
-void storeOutdoor(bool value) {
-  writeBool(outdoor_offset, value);
-}
-
-bool storeWifiData(char* ssid, char* password) {
-  if (strlen(ssid) == 0 || strlen(password) == 0) {
-    return false;
-  }
-
-  writeNulled(ssid, ssid_offset, ssid_bytes);
-  writeNulled(password, ssid_pw_offset, ssid_pw_bytes);
-
-  Serial.print("Stored SSID: ");
-  Serial.print(ssid);
-  Serial.print(" with password length: ");
-  Serial.println(strlen(password));
-  return true;
-}
-
 #endif

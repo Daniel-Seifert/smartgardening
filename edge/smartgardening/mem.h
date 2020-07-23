@@ -24,4 +24,6 @@ void printMemory() {
   Serial.println(freeMemory());
 }
 
+void(* resetFunc) (void) = 0;
+
 #endif

@@ -9,9 +9,7 @@ void setup() {
   StaticJsonDocument<300> doc;
   bool isPumping = true;
   doc["pumping"] = isPumping;
-  char jsonChar[100];
-  serializeJson(doc, jsonChar, 100);
-  Serial.println((char *)jsonChar);
+  Serial.println(doc.containsKey("pumping"));
 
 }
 
