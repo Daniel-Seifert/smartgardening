@@ -38,7 +38,7 @@
 
           <v-expansion-panel-content>
             <v-layout align-center justify-space-between row fill-height>
-              <v-flex lg8 xs12>
+              <v-flex lg7 xs12>
                 <line-chart
                   v-if="device.activated"
                   :height="175"
