@@ -13,14 +13,14 @@
                   <h2>{{ device.name }}</h2>
                 </v-badge>
               </v-flex>
-              <v-flex lg5 xs4>
+              <v-flex lg5 xs3>
                 <v-fade-transition leave-absolute>
                   <span v-if="open" key="0">
                     Aktuellste Messungen
                   </span>
                 </v-fade-transition>
               </v-flex>
-              <v-flex lg1 xs3>
+              <v-flex lg1 xs4>
                 <v-btn
                   :disabled="!device.activated"
                   class="mx-4"
@@ -79,7 +79,7 @@
               </v-flex>
               <v-flex lg12 xs10>
                 <v-layout align-center justify-end row>
-                  <v-flex xs2>
+                  <v-flex lg2 xs4>
                     <v-btn
                       v-if="!device.activated"
                       text
@@ -89,7 +89,7 @@
                       Aktivieren
                     </v-btn>
                   </v-flex>
-                  <v-flex xs2>
+                  <v-flex lg2 xs4>
                     <v-btn text color="error" @click="deleteDevice(device.id)">
                       Löschen
                     </v-btn>
