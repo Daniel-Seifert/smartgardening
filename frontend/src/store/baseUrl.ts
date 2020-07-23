@@ -1,1 +1,1 @@
-export const baseUrl = "https://smart-gardening.herokuapp.com";
+export const baseUrl = "http://localhost:8080";
