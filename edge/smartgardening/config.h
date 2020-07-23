@@ -9,20 +9,20 @@
 
 /**
    EEPROM structure
-   | UUID (16 bytes) [0-15]| Humid min (2 bytes) [16-17]| Humidity max (2 bytes) [18-19] |
-   | wateringSec min (2 bytes) [20-21]| wateringSec max (2 bytes) [22-23]| active (1 byte) [24] |
-   | SSID (32 bytes) [25-56] | SSID-Password (64 bytes) [57-110] |
+   | UUID (36 bytes) [0-35]| Humid min (2 bytes) [36-37]| Humidity max (2 bytes) [38-39] |
+   | wateringSec min (2 bytes) [40-41]| wateringSec max (2 bytes) [42-43]| active (1 byte) [44] |
+   | SSID (32 bytes) [45-76] | SSID-Password (64 bytes) [77-140] |
 */
 
 const int uuid_offset = 0;
-const int humid_min_offset = 16;
-const int humid_max_offset = 18;
-const int water_min_offset = 20;
-const int water_max_offset = 22;
-const int active_offset = 24;
-const int ssid_offset = 25;
-const int ssid_pw_offset = 57;
-const int uuid_bytes = 16;
+const int humid_min_offset = 36;
+const int humid_max_offset = 38;
+const int water_min_offset = 40;
+const int water_max_offset = 42;
+const int active_offset = 44;
+const int ssid_offset = 45;
+const int ssid_pw_offset = 77;
+const int uuid_bytes = 36;
 const int ssid_bytes = 32;
 const int ssid_pw_bytes = 64;
 
@@ -61,7 +61,11 @@ void printMemorys() {
    ##############################################
 */
 
+<<<<<<< Updated upstream
 void writeNulled(char* value, int offset, int length) {
+=======
+void writeNulled(const char * value, int offset, int length) {
+>>>>>>> Stashed changes
   for (int i = 0; i < length; i++) {
     if (i < strlen(value)) {
       EEPROM.write(offset + i, value[i]);
