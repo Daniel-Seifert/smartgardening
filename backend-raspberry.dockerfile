@@ -11,7 +11,7 @@ COPY ./frontend/package*.json ./
 RUN npm install
 
 COPY ./frontend ./
-RUN echo "export const baseUrl = '${backend_url}}';" > ./src/store/baseUrl.ts
+RUN echo "export const baseUrl = '${backend_url}';" > ./src/store/baseUrl.ts
 RUN npm run build
 
 # ---------------------
