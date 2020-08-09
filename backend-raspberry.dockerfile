@@ -3,13 +3,15 @@
 # ---------------------
 FROM node:lts-alpine as BUILD-FRONTEND
 
+ARG backend_url=https://smart-gardening.herokuapp.com
+
 WORKDIR /app
 
 COPY ./frontend/package*.json ./
 RUN npm install
 
 COPY ./frontend ./
-RUN echo "export const baseUrl = 'https://smart-gardening.herokuapp.com';" > ./src/store/baseUrl.ts
+RUN echo "export const baseUrl = '${backend_url}}';" > ./src/store/baseUrl.ts
 RUN npm run build
 
 # ---------------------
@@ -28,7 +30,9 @@ RUN mvn -f pom.xml -Djar.finalName=app -DskipTests clean package
 # ---------------------
 # Runtime Container
 # ---------------------
-FROM openjdk:13-jdk-alpine
+FROM balenalib/raspberrypi3-debian:latest
+
+RUN apt-get update && apt-get install default-jdk -y
 
 ENV APP_HOME=/app
 ENV STAGE="prod"

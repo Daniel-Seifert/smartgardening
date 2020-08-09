@@ -5,7 +5,7 @@
         <v-expansion-panel v-for="(device, i) in devices" :key="i">
           <v-expansion-panel-header v-slot="{ open }">
             <v-layout align-center justify-space-between row fill-height>
-              <v-flex lg6 xs5>
+              <v-flex lg6 xs8>
                 <v-badge
                   :color="device.activated ? 'green' : 'red'"
                   :content="device.activated ? 'active' : 'inactive'"
@@ -13,11 +13,9 @@
                   <h2>{{ device.name }}</h2>
                 </v-badge>
               </v-flex>
-              <v-flex lg5 xs3>
+              <v-flex lg5 xs0>
                 <v-fade-transition leave-absolute>
-                  <span v-if="open" key="0">
-                    Aktuellste Messungen
-                  </span>
+                  <span v-if="open" key="0">Aktuellste Messungen</span>
                 </v-fade-transition>
               </v-flex>
               <v-flex lg1 xs4>
@@ -41,13 +39,11 @@
               <v-flex lg7 xs12>
                 <line-chart
                   v-if="device.activated"
-                  :height="175"
+                  :height="200"
                   :chart-data="measurementDataCollection(device.id)"
                   :options="options"
                 ></line-chart>
-                <h2 v-else>
-                  Das Gerät muss für Messungen aktiviert werden
-                </h2>
+                <h2 v-else>Das Gerät muss für Messungen aktiviert werden</h2>
               </v-flex>
               <v-flex lg1 xs0>
                 <v-divider vertical class="mx-4"></v-divider>
@@ -63,17 +59,21 @@
                 <v-list-item v-if="device.activated">
                   <v-list-item-content>
                     <v-list-item-title>Feuchtigkeit</v-list-item-title>
-                    <v-list-item-subtitle>{{
+                    <v-list-item-subtitle>
+                      {{
                       deviceStatus(device.id).humidity
-                    }}</v-list-item-subtitle>
+                      }}
+                    </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>
                   <v-list-item-content v-if="device.activated">
                     <v-list-item-title>Letzte Bewässerung</v-list-item-title>
-                    <v-list-item-subtitle>{{
+                    <v-list-item-subtitle>
+                      {{
                       deviceStatus(device.id).lastWatering
-                    }}</v-list-item-subtitle>
+                      }}
+                    </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
               </v-flex>
@@ -85,14 +85,10 @@
                       text
                       color="success"
                       @click="activateDevices(device.id)"
-                    >
-                      Aktivieren
-                    </v-btn>
+                    >Aktivieren</v-btn>
                   </v-flex>
                   <v-flex lg2 xs4>
-                    <v-btn text color="error" @click="deleteDevice(device.id)">
-                      Löschen
-                    </v-btn>
+                    <v-btn text color="error" @click="deleteDevice(device.id)">Löschen</v-btn>
                   </v-flex>
                 </v-layout>
               </v-flex>
@@ -114,14 +110,14 @@ import { mapActions } from "vuex";
 export default Vue.extend({
   name: "Devices",
   components: {
-    LineChart,
+    LineChart
   },
   data: () => ({
     deletePressCount: 0,
     selectedIndex: -1,
     stats: {
       humidity: "57%",
-      lastWatering: "14.07.2020 19:10",
+      lastWatering: "14.07.2020 19:10"
     },
     datacollection: {},
     options: {
@@ -134,12 +130,12 @@ export default Vue.extend({
             display: true,
             ticks: {
               suggestedMin: 0,
-              suggestedMax: 100,
-            },
-          },
-        ],
-      },
-    },
+              suggestedMax: 100
+            }
+          }
+        ]
+      }
+    }
   }),
   mounted() {
     this.$store.dispatch("loadDevices");
@@ -147,9 +143,9 @@ export default Vue.extend({
   computed: {
     ...mapGetters({
       devices: "allDevices",
-      activatedDevices: "activatedDevices",
+      activatedDevices: "activatedDevices"
     }),
-    ...mapGetters(["measurementDataCollection", "deviceStatus"]),
+    ...mapGetters(["measurementDataCollection", "deviceStatus"])
   },
   watch: {
     selectedIndex: function() {
@@ -157,7 +153,7 @@ export default Vue.extend({
         this.loadMeasurements(this.devices[this.selectedIndex].id);
         this.loadStatus(this.devices[this.selectedIndex].id);
       }
-    },
+    }
   },
   methods: {
     ...mapActions(["loadMeasurements", "loadStatus"]),
@@ -179,7 +175,7 @@ export default Vue.extend({
         this.selectedIndex = -1;
         this.deletePressCount == 0;
       }
-    },
-  },
+    }
+  }
 });
 </script>
