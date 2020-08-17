@@ -13,12 +13,10 @@ const int resetThreshold = 3;
 bool ssid_set = false;
 bool wifi_connected = false;
 
-void setup()
-{
+void setup() {
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
-  while (!Serial)
-  {
+  while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
 
@@ -29,16 +27,11 @@ void setup()
   char *ssid = getSsid();
   char *password = getSsidPw();
   ssid_set = strlen(ssid) > 0 && strlen(password) > 0;
-  if (!ssid_set)
-  {
+  if (!ssid_set) {
     // Setup access point
-    while (!apSetup())
-    {
-    }
+    while (!apSetup()) {}
     // Host access point
-    while (!apRun())
-    {
-    }
+    while (!apRun()) {}
     free(ssid);
     free(password);
 
@@ -46,8 +39,7 @@ void setup()
     ssid = getSsid();
     password = getSsidPw();
   }
-  else
-  {
+  else {
     Serial.print("Loaded config for access point: ");
     Serial.print(ssid);
     Serial.print(" with password length: ");
@@ -56,8 +48,7 @@ void setup()
 
   Serial.println("Connecting to Wifi");
   wifi_connected = connectWifi(ssid, password, 5);
-  if (!wifi_connected)
-  {
+  if (!wifi_connected) {
     int reset = getReset();
     reset++;
     if (reset >= resetThreshold) {
@@ -81,8 +72,7 @@ void setup()
   free(password);
 }
 
-void loop()
-{
+void loop() {
   char *ssid = getSsid();
   char *password = getSsidPw();
 

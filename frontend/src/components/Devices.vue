@@ -66,6 +66,33 @@
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
+                <v-list-item v-if="device.activated && deviceStatus(device.id).rain != null">
+                  <v-list-item-content>
+                    <v-list-item-title>Wetter</v-list-item-title>
+                    <v-layout align-left row fill-height>
+                      <v-flex lg3 xs3>
+                        <v-img
+                          v-if="deviceStatus(device.id).rain"
+                          alt="Regen"
+                          class="shrink mr-2"
+                          contain
+                          src="./../assets/Rain.png"
+                          transition="scale-transition"
+                          height="50"
+                        />
+                        <v-img
+                          v-else
+                          alt="Sonnig"
+                          class="shrink mr-2"
+                          contain
+                          src="./../assets/Sun.png"
+                          transition="scale-transition"
+                          height="50"
+                        />
+                      </v-flex>
+                    </v-layout>
+                  </v-list-item-content>
+                </v-list-item>
                 <v-list-item>
                   <v-list-item-content v-if="device.activated">
                     <v-list-item-title>Letzte Bewässerung</v-list-item-title>

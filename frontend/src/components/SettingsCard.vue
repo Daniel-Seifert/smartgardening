@@ -5,33 +5,17 @@
         <v-flex xs12>
           <v-layout align-start justify-space-around row wrap>
             <v-flex lg7 xs12 order-lg1 order-xs2>
-              <v-text-field
-                v-model="name"
-                :counter="50"
-                :rules="nameRules"
-                label="Name"
-                required
-              ></v-text-field>
+              <v-text-field v-model="name" :counter="50" :rules="nameRules" label="Name" required></v-text-field>
             </v-flex>
             <v-flex md2 xs5 order-lg2 order-xs1 offset-xs0 offset-lg2>
-              <v-btn
-                color="success"
-                class="mr-4"
-                @click="save($route.params.uuid)"
-              >
-                Speichern
-              </v-btn>
+              <v-btn color="success" class="mr-4" @click="save($route.params.uuid)">Speichern</v-btn>
             </v-flex>
           </v-layout>
         </v-flex>
         <v-flex xs12>
           <v-layout align-start row wrap>
             <v-flex lg2>
-              <v-switch
-                v-model="config.outdoor"
-                class="ma-4"
-                label="Outdoor"
-              ></v-switch>
+              <v-switch v-model="config.outdoor" class="ma-4" label="Outdoor"></v-switch>
             </v-flex>
             <v-flex lg5>
               <v-fade-transition leave-absolute>
@@ -58,9 +42,7 @@
                 :thumb-size="30"
                 thumb-label="always"
               >
-                <template v-slot:thumb-label="{ value }">
-                  {{ value }}%
-                </template>
+                <template v-slot:thumb-label="{ value }">{{ value }}%</template>
               </v-slider>
             </v-flex>
 
@@ -72,9 +54,7 @@
                 :thumb-size="30"
                 thumb-label="always"
               >
-                <template v-slot:thumb-label="{ value }">
-                  {{ value }}%
-                </template>
+                <template v-slot:thumb-label="{ value }">{{ value }}%</template>
               </v-slider>
             </v-flex>
 
@@ -84,13 +64,13 @@
                 style="margin-top: 55px"
                 v-model="config.minWateringSeconds"
                 :thumb-size="50"
-                max="3600"
+                max="1200"
                 thumb-label="always"
                 step="5"
               >
-                <template v-slot:thumb-label="{ value }">
-                  {{ Math.floor(value / 60) }}m {{ value % 60 }}s
-                </template>
+                <template
+                  v-slot:thumb-label="{ value }"
+                >{{ Math.floor(value / 60) }}m {{ value % 60 }}s</template>
               </v-slider>
             </v-flex>
 
@@ -100,13 +80,13 @@
                 style="margin-top: 55px"
                 v-model="config.maxWateringSeconds"
                 :thumb-size="50"
-                max="3600"
+                max="1200"
                 thumb-label="always"
                 step="5"
               >
-                <template v-slot:thumb-label="{ value }">
-                  {{ Math.floor(value / 60) }}m {{ value % 60 }}s
-                </template>
+                <template
+                  v-slot:thumb-label="{ value }"
+                >{{ Math.floor(value / 60) }}m {{ value % 60 }}s</template>
               </v-slider>
             </v-flex>
           </v-layout>
@@ -135,7 +115,7 @@ export default Vue.extend({
   },
 
   computed: {
-    ...mapGetters(["getDevice", "getDeviceConfig", "getDeviceHummidity"]),
+    ...mapGetters(["getDevice", "getDeviceConfig", "getDeviceHummidity"])
   },
 
   data: () => ({
@@ -146,29 +126,29 @@ export default Vue.extend({
       minHumidity: 0,
       maxHumidity: 0,
       minWateringSeconds: 0,
-      maxWateringSeconds: 0,
+      maxWateringSeconds: 0
     },
     nameRules: [
       (v: any) => !!v || "Name wird benötigt",
       (v: any) =>
-        (v && v.length <= 50) || "Name darf nicht mehr als 50 Zeichen haben",
+        (v && v.length <= 50) || "Name darf nicht mehr als 50 Zeichen haben"
     ],
     zipCodeRules: [
       (v: any) => !!v || "Postleitzahl wird benötigt",
       (v: any) =>
         (v && v.length <= 10) ||
-        "Postleitzahl darf nicht mehr als 10 Zeichen haben",
-    ],
+        "Postleitzahl darf nicht mehr als 10 Zeichen haben"
+    ]
   }),
   methods: {
     save(uuid: string) {
       this.$store.dispatch("setDeviceConfig", {
         uuid: uuid,
-        config: this.config,
+        config: this.config
       });
       this.$store.dispatch("setDeviceName", { uuid: uuid, name: this.name });
       this.$router.push("/");
-    },
-  },
+    }
+  }
 });
 </script>

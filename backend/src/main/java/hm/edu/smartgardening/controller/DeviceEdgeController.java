@@ -55,7 +55,7 @@ public class DeviceEdgeController {
 
         final String zipCode = device.getConfig().getZipCode();
         final WeatherOutDto currWeather = weatherController.getWeather(zipCode, new Date());
-        return mapper.map(currWeather.getRain() > RELEVANT_RAINFALL, RainDto.class);
+        return new RainDto(currWeather.getRain() > RELEVANT_RAINFALL);
     }
 
     @PostMapping("{uuid}/measures")

@@ -3,10 +3,10 @@
 
 #define MoisturePin A0
 #define RelayPin 8
-#define MoistureSendInterval 1L*60L*1000L // 1 m
+#define MoistureSendInterval 60L*60L*1000L // 1 h
 #define WeatherRequestInterval 60L*60L*3L*1000L // 3 hours
-#define MinWateringInterval 60L*1000L // 1m
-#define ConfPullInterval 1L*60L*60L*1000L // 1 h
+#define MinWateringInterval 1L*60L*60L*1000L // 1h
+#define ConfPullInterval 12L*60L*60L*1000L // 12h
 
 #include "api.h"
 #include "config.h"
@@ -21,11 +21,20 @@ bool raining = false;
 
 int readMoisture() {
   int moisture_value = analogRead(MoisturePin);
-  // 100 % moisture == sensor analog output of 365
-  moisture_value = map(moisture_value, 1023, 365, 0, 100);
+  // 100 % moisture == sensor analog output of 427
+
+  // Map value
+  moisture_value = map(moisture_value, 816, 427, 0, 100);
   if (moisture_value > 100) {
     return 100;
   }
+
+  // Clamp value
+  if (moisture_value < 0)
+    moisture_value = 0;
+  if (moisture_value > 100)
+    moisture_value = 100;
+
   return moisture_value;
 }
 
@@ -76,7 +85,7 @@ void wateringLoop() {
   bool outdoor = isOutdoor();
 
   // Request weather
-  if (lastWeather == 0 || (now - lastWeather) > WeatherRequestInterval) {
+  if (outdoor && (lastWeather == 0 || (now - lastWeather) > WeatherRequestInterval)) {
     requestWeather();
     lastWeather = now;
   }
@@ -99,7 +108,7 @@ void wateringLoop() {
   unsigned long runTime = now - lastSwitch;
   if (pumping) {
     Serial.print("Runtime sec: ");
-    Serial.println(runTime/1000);
+    Serial.println(runTime / 1000);
   }
 
   // Turn pump OFF

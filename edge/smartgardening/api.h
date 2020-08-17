@@ -12,8 +12,8 @@
 const int bufferSize = 300;
 unsigned long lastConnectionTry = 0;
 
-WiFiSSLClient api_client;
-char api_server[] = "smart-gardening.herokuapp.com";
+WiFiClient api_client;
+char api_server[] = "smartgardening";
 
 bool connectWifi(char* ssid, char* password, int retries) {
   int count = 0;
@@ -40,7 +40,7 @@ void apiConnect() {
   if (!api_client.connected()) {
     api_client.stop();
     Serial.println("Connecting client");
-    api_client.connect(api_server, 443);
+    api_client.connect(api_server, 80);
   }
 }
 
@@ -58,7 +58,7 @@ void httpRequest(const char * TYPE, const char * endpoint, const  char * body) {
 
   int content_length = strlen(body);
   api_client.println(sendMessage);
-  api_client.println(F("Host: smart-gardening.herokuapp.com"));
+  api_client.println(F("Host: smartgardening"));
   api_client.println(F("Connection: close"));
   api_client.print(F("Content-Length: "));
   api_client.println(content_length);

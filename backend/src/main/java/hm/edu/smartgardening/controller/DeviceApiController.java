@@ -20,10 +20,12 @@ public class DeviceApiController {
 
     private final DeviceService devices;
     private final ModelMapper mapper;
+    private final DeviceEdgeController edge;
 
-    public DeviceApiController(DeviceService devices, ModelMapper mapper) {
+    public DeviceApiController(DeviceService devices, ModelMapper mapper, DeviceEdgeController edge) {
         this.devices = devices;
         this.mapper = mapper;
+        this.edge = edge;
     }
 
     @GetMapping()
@@ -50,7 +52,15 @@ public class DeviceApiController {
     @GetMapping("{uuid}/status")
     public StatusDto getDeviceStatus(@PathVariable UUID uuid) {
         final Device device = devices.getByUuidOrThrow(uuid);
-        return mapper.map(device.getStatus(), StatusDto.class);
+        StatusDto dto = mapper.map(device.getStatus(), StatusDto.class);
+        if (device.getConfig().isOutdoor()) {
+            RainDto rain = edge.rainToday(uuid);
+            if (rain != null) {
+                dto.setRain(rain.isRain());
+            }
+        }
+
+        return dto;
     }
 
     @PutMapping("{uuid}/config")
