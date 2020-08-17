@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.UUID;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/edge/devices")
 public class DeviceEdgeController {
 

@@ -131,7 +131,7 @@ export default new Vuex.Store({
                 ],
               },
               {
-                label: "Temp (day)",
+                label: "Temp in °C",
                 backgroundColor: "#ffa166",
                 data: [
                   ...measurements

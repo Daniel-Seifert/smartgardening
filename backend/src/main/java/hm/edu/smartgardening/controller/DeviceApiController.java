@@ -3,7 +3,6 @@ package hm.edu.smartgardening.controller;
 import hm.edu.smartgardening.controller.dto.*;
 import hm.edu.smartgardening.model.Config;
 import hm.edu.smartgardening.model.Device;
-import hm.edu.smartgardening.repository.WeatherRepository;
 import hm.edu.smartgardening.service.DeviceService;
 import org.modelmapper.ModelMapper;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,7 +14,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/api/devices")
 public class DeviceApiController {
 

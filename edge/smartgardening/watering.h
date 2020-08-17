@@ -5,8 +5,8 @@
 #define RelayPin 8
 #define MoistureSendInterval 3L*60L*60L*1000L // 3 h
 #define WeatherRequestInterval 3L*60L*60L*1000L // 3 hours
-#define MinWateringInterval 1L*60L*60L*1000L // 1h
-#define ConfPullInterval 12L*60L*60L*1000L // 12h
+#define MinWateringInterval 24L*60L*60L*1000L // 24h
+#define ConfPullInterval 3L*60L*60L*1000L // 3h
 
 #include "api.h"
 #include "config.h"
