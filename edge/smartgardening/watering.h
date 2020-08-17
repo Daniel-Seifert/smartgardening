@@ -3,8 +3,8 @@
 
 #define MoisturePin A0
 #define RelayPin 8
-#define MoistureSendInterval 60L*60L*1000L // 1 h
-#define WeatherRequestInterval 60L*60L*3L*1000L // 3 hours
+#define MoistureSendInterval 3L*60L*60L*1000L // 3 h
+#define WeatherRequestInterval 3L*60L*60L*1000L // 3 hours
 #define MinWateringInterval 1L*60L*60L*1000L // 1h
 #define ConfPullInterval 12L*60L*60L*1000L // 12h
 

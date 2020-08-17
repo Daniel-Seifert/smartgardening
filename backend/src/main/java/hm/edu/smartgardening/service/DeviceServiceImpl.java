@@ -1,11 +1,11 @@
 package hm.edu.smartgardening.service;
 
 import hm.edu.smartgardening.exceptions.ResourceNotFoundException;
-import hm.edu.smartgardening.model.Config;
-import hm.edu.smartgardening.model.Device;
-import hm.edu.smartgardening.model.Measurement;
+import hm.edu.smartgardening.model.*;
 import hm.edu.smartgardening.repository.DeviceRepository;
 import hm.edu.smartgardening.repository.MeasurementRepository;
+import hm.edu.smartgardening.repository.WeatherRepository;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -18,10 +18,12 @@ public class DeviceServiceImpl implements DeviceService {
 
     private final DeviceRepository deviceRepository;
     private final MeasurementRepository measurementRepository;
+    private final WeatherRepository weatherRepository;
 
-    public DeviceServiceImpl(DeviceRepository deviceRepository, MeasurementRepository measurementRepository) {
+    public DeviceServiceImpl(DeviceRepository deviceRepository, MeasurementRepository measurementRepository, WeatherRepository weatherRepository) {
         this.deviceRepository = deviceRepository;
         this.measurementRepository = measurementRepository;
+        this.weatherRepository = weatherRepository;
     }
 
     @Override
@@ -65,7 +67,27 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public List<Measurement> getMeasurementsByUuidSince(UUID uuid, Date since) {
-        return since == null ? this.getByUuidOrThrow(uuid).getMeasurements() :
+        final Device device = this.getByUuidOrThrow(uuid);
+        // Load raw measurements
+        final List<Measurement> measurements = since == null ? device.getMeasurements() :
                 measurementRepository.getMeasurementsByUuidSince(uuid, since);
+        // Add weather
+        if (since != null && device.getConfig().isOutdoor()) {
+            final List<Weather> weather = weatherRepository.getWeatherByZipCodeSince(device.getConfig().getZipCode(), since, DateUtils.addDays(new Date(), 3));
+            // Add rain
+            for (Weather w : weather) {
+                measurements.add(new Measurement(0L, MeasureType.RAIN, w.getId().getDay(), w.getRain(), device));
+            }
+            // Add clouds
+            for (Weather w : weather) {
+                measurements.add(new Measurement(0L, MeasureType.CLOUDS, w.getId().getDay(), w.getClouds(), device));
+            }
+            // Add temp day
+            for (Weather w : weather) {
+                measurements.add(new Measurement(0L, MeasureType.TEMP_DAY, w.getId().getDay(), w.getTempDay() - 273.15f, device));
+            }
+        }
+        return measurements;
     }
+
 }

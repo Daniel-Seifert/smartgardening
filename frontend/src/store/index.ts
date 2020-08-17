@@ -4,6 +4,7 @@ import axios from "axios";
 import { Device } from "../model/Device";
 import { baseUrl } from "./baseUrl";
 import moment from "moment";
+import { Measurement } from "../model/Measurement";
 
 Vue.use(Vuex);
 
@@ -53,15 +54,107 @@ export default new Vuex.Store({
         ? emptyMeasruements
         : {
             labels: [
-              ...measurements.map((measure) =>
-                moment(measure.createDate).format("dd HH:mm")
-              ),
+              ...measurements
+                .filter(
+                  (measure) =>
+                    measure.measureType === "MOISTURE" ||
+                    (moment(measure.createDate).isAfter(moment.now()) &&
+                      measure.measureType === "TEMP_DAY")
+                )
+                .map((measure) =>
+                  moment(measure.createDate)
+                    .lang("de")
+                    .format("dd Do HH:mm")
+                ),
             ],
             datasets: [
               {
                 label: "Feuchtigkeit in %",
-                backgroundColor: "#1E88E5",
-                data: [...measurements.map((measure) => measure.value)],
+                backgroundColor: "#4fa1ff",
+                data: [
+                  ...measurements
+                    .filter((measure) => measure.measureType === "MOISTURE")
+                    .map((measure) => measure.value),
+                ],
+              },
+              {
+                label: "Regen in mm",
+                backgroundColor: "#03d5ff",
+                data: [
+                  // Map rain to moisture values
+                  ...measurements
+                    .filter((measure) => measure.measureType === "MOISTURE")
+                    .map((m) => {
+                      const match = measurements
+                        .filter((mes) => mes.measureType === "RAIN")
+                        .find(
+                          (it) =>
+                            moment(it.createDate).day ===
+                            moment(m.createDate).day
+                        );
+                      return match ? match.value : 0;
+                    }),
+                  // Add forecast
+                  ...measurements
+                    .filter(
+                      (measure) =>
+                        measure.measureType === "RAIN" &&
+                        moment(measure.createDate).isAfter(moment.now())
+                    )
+                    .map((it) => it.value),
+                ],
+              },
+              {
+                label: "Bewölkung in %",
+                backgroundColor: "#f5f5f5",
+                data: [
+                  ...measurements
+                    .filter((measure) => measure.measureType === "MOISTURE")
+                    .map((m) => {
+                      const match = measurements
+                        .filter((mes) => mes.measureType === "CLOUDS")
+                        .find(
+                          (it) =>
+                            moment(it.createDate).day ===
+                            moment(m.createDate).day
+                        );
+                      return match ? match.value : 0;
+                    }),
+                  // Add forecast
+                  ...measurements
+                    .filter(
+                      (measure) =>
+                        measure.measureType === "CLOUDS" &&
+                        moment(measure.createDate).isAfter(moment.now())
+                    )
+                    .map((it) => it.value),
+                ],
+              },
+              {
+                label: "Temp (day)",
+                backgroundColor: "#ffa166",
+                data: [
+                  ...measurements
+                    .filter((measure) => measure.measureType === "MOISTURE")
+                    .map((m) => {
+                      const match = measurements
+                        .filter((mes) => mes.measureType === "TEMP_DAY")
+                        .find(
+                          (it) =>
+                            moment(it.createDate).day ===
+                            moment(m.createDate).day
+                        );
+                      return match ? match.value : 0;
+                    }),
+                  // Add forecast
+                  ...measurements
+                    .filter(
+                      (measure) =>
+                        measure.measureType === "TEMP_DAY" &&
+                        moment(measure.createDate).isAfter(moment.now())
+                    )
+                    .map((it) => it.value),
+                ],
               },
             ],
           };

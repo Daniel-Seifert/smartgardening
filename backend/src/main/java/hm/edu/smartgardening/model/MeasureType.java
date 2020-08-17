@@ -1,5 +1,5 @@
 package hm.edu.smartgardening.model;
 
 public enum MeasureType {
-    MOISTURE
+    MOISTURE, RAIN, CLOUDS, TEMP_MIN, TEMP_DAY, TEMP_MAX
 }

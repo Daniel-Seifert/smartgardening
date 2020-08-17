@@ -1,12 +1,9 @@
 package hm.edu.smartgardening.model;
 
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import java.util.Date;
 
 @Entity
 @Data
@@ -16,15 +13,6 @@ import java.util.Date;
 @EqualsAndHashCode
 public class Weather {
 
-    public Weather(WeatherId id, Float tempMin, Float tempDay, Float tempMax, Float rain, Integer clouds) {
-        this.id = id;
-        this.tempMin = tempMin;
-        this.tempDay = tempDay;
-        this.tempMax = tempMax;
-        this.rain = rain;
-        this.clouds = clouds;
-    }
-
     @EmbeddedId
     private WeatherId id;
     private Float tempMin;
@@ -32,11 +20,6 @@ public class Weather {
     private Float tempMax;
     private Float rain;
     private Integer clouds;
-
-    @CreatedDate
-    private Date createDate;
-    @LastModifiedDate
-    private Date updateDate;
 
     public Weather add(Weather other) {
         return new Weather(
