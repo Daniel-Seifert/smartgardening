@@ -97,6 +97,5 @@ void loop() {
   printMemory();
 #endif
   wateringLoop();
-
-  delay(1000);
+  delay(100);
 }

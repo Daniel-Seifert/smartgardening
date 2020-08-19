@@ -3,6 +3,7 @@ package hm.edu.smartgardening.controller;
 import hm.edu.smartgardening.controller.dto.*;
 import hm.edu.smartgardening.exceptions.UnauthorizedException;
 import hm.edu.smartgardening.model.Device;
+import hm.edu.smartgardening.model.MeasureType;
 import hm.edu.smartgardening.model.Measurement;
 import hm.edu.smartgardening.model.Status;
 import hm.edu.smartgardening.service.DeviceService;
@@ -16,7 +17,9 @@ import java.util.UUID;
 @RequestMapping("/edge/devices")
 public class DeviceEdgeController {
 
-    /** The amount of liters per square meter */
+    /**
+     * The amount of liters per square meter
+     */
     public static final float RELEVANT_RAINFALL = 1.5f;
 
     private final DeviceService devices;
@@ -74,15 +77,21 @@ public class DeviceEdgeController {
 
     @PutMapping("{uuid}/status")
     public StatusBriefDto updateDeviceStatus(@PathVariable UUID uuid, @RequestBody StatusBriefDto updateStatus) {
-        final Device device = devices.getByUuidOrThrow(uuid);
+        Device device = devices.getByUuidOrThrow(uuid);
         if (!device.isActivated()) {
             throw new UnauthorizedException();
         }
 
+        // Store pumping status as measurement
+        final Measurement measurement = new Measurement(null, MeasureType.PUMPING, new Date(), updateStatus.isPumping() ? 1 : 0, device);
+        device.addMeasurement(measurement);
+        device = devices.updateDeviceOrThrow(device);
+
+        // Update device status
         final Status newStatus = mapper.map(updateStatus, Status.class);
         newStatus.setHumidity(device.getStatus().getHumidity());
         newStatus.setId(device.getStatus().getId());
-        if(device.getStatus().isPumping() && !newStatus.isPumping())
+        if (device.getStatus().isPumping() && !newStatus.isPumping())
             // If the device stops watering, save the date and time
             newStatus.setLastWatering(new Date());
         else

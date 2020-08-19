@@ -1,24 +1,46 @@
 #ifndef WATERING_H
 #define WATERING_H
 
+// Pin usage
 #define MoisturePin A0
 #define RelayPin 8
+#define TransmitPin 10
+#define ReceivePin 2
+#define Remote
+
+// Timing settings
 #define MoistureSendInterval 3L*60L*60L*1000L // 3 h
 #define WeatherRequestInterval 3L*60L*60L*1000L // 3 hours
-#define MinWateringInterval 24L*60L*60L*1000L // 24h
+//#define MinWateringInterval 24L*60L*60L*1000L // 24h
+#define MinWateringInterval 10L*1000L // 10s
 #define ConfPullInterval 3L*60L*60L*1000L // 3h
 
+// Codes for 433 MHz sending
+#define A_ON 345425
+#define A_OFF 345428
+#define B_ON 348497
+#define B_OFF 348500
+#define C_ON 349265
+#define C_OFF 349268
+#define D_ON 349457
+#define D_OFF 349460
+
+// Includes
 #include "api.h"
 #include "config.h"
+#include <RCSwitch.h>
 
+// Global variables
 unsigned long lastSent = millis();
 unsigned long lastSwitch = millis();
 unsigned long lastWeather = 0;
 unsigned long lastConfPull = 0;
+RCSwitch remoteSwitch = RCSwitch();
 
 bool pumping = false;
 bool raining = false;
 
+// Functions
 int readMoisture() {
   int moisture_value = analogRead(MoisturePin);
   // 100 % moisture == sensor analog output of 427
@@ -41,16 +63,44 @@ int readMoisture() {
 void switchRelay(bool value) {
   if (value) {
     Serial.println("Turn pump: ON");
+#if defined(Remote)
+    for (int i = 0; i < 5; i++) {
+      remoteSwitch.send(A_ON, 24);
+      delay(200);
+    }
+#else
     digitalWrite(RelayPin, HIGH);
+#endif
   } else {
     Serial.println("Turn pump: OFF");
+#if defined(Remote)
+    for (int i = 0; i < 5; i++) {
+      remoteSwitch.send(A_OFF, 24);
+      delay(200);
+    }
+#else
     digitalWrite(RelayPin, LOW);
+#endif
   }
 }
 
 void setupPins() {
+#if defined(Remote)
+  remoteSwitch.enableReceive(ReceivePin);
+  remoteSwitch.enableTransmit(TransmitPin);
+#else
   pinMode(RelayPin, OUTPUT);
+#endif
   switchRelay(false);
+}
+
+int receiveSignal() {
+  int value = -1;
+  if (remoteSwitch.available()) {
+    value = remoteSwitch.getReceivedValue();
+    remoteSwitch.resetAvailable();
+  }
+  return value;
 }
 
 void sendMoisture(int moisture) {
@@ -74,6 +124,15 @@ void wateringLoop() {
   // Determine elapsed time
   unsigned long now = millis();
 
+  // Check for manual pumping signal
+  int sig = receiveSignal();
+  if (sig != -1) {
+    switch(sig) {
+      case A_ON: apiSetPumping(true); break;
+      case A_OFF: apiSetPumping(false); break;
+    }
+  }
+  
   // Read moisture
   int moisture = readMoisture();
 
